@@ -4,11 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0f25c4ff-c884-47c6-b194-197de536501a" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/proyectoGrafos.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/proyectoGrafos.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+    <list default="true" id="0f25c4ff-c884-47c6-b194-197de536501a" name="Changes" comment="se añaden carpetas">
+      <change afterPath="$PROJECT_DIR$/app/controllers/vehiculo_controller.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/model/vehiculos.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/views/interfaz.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,7 +40,9 @@
   &quot;associatedIndex&quot;: 6
 }</component>
   <component name="ProjectId" id="2gtqDZEBIOtgkfk4VJBbOd4Ddwa" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -94,7 +95,20 @@
       <option name="presentableId" value="Default" />
       <updated>1716527102490</updated>
     </task>
+    <task id="LOCAL-00001" summary="se añaden carpetas">
+      <option name="closed" value="true" />
+      <created>1716957557269</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1716957557269</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="se añaden carpetas" />
+    <option name="LAST_COMMIT_MESSAGE" value="se añaden carpetas" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
