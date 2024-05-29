@@ -1,16 +1,42 @@
-# This is a sample Python script.
+# Importar las bibliotecas necesarias
+import mesa
+import networkx as nx
+import matplotlib.pyplot as plt
 
-# Press Mayús+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+# Crear una clase de agente
+class GraphAgent(mesa.Agent):
+    def __init__(self, unique_id, model):
+        super().__init__(unique_id, model)
 
+    def step(self):
+        # Definir el comportamiento del agente en cada paso
+        pass
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+# Crear una clase de modelo
+class GraphModel(mesa.Model):
+    def __init__(self, N):
+        self.num_agents = N
+        self.schedule = mesa.time.RandomActivation(self)
 
+        # Crear una red de grafos utilizando NetworkX
+        self.graph = nx.erdos_renyi_graph(n=N, p=0.1)
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+        # Crear agentes y añadirlos al modelo
+        for i in range(self.num_agents):
+            agent = GraphAgent(i, self)
+            self.schedule.add(agent)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    def step(self):
+        self.schedule.step()
+
+# Inicializar y ejecutar el modelo
+num_agents = 10
+model = GraphModel(num_agents)
+
+for i in range(10):
+    model.step()
+
+# Dibujar el grafo utilizando Matplotlib
+pos = nx.spring_layout(model.graph)
+nx.draw(model.graph, pos, with_labels=True)
+plt.show()
