@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use('TkAgg')  # Cambia TkAgg por otro backend si es necesario
+
 import networkx as nx
 import matplotlib.pyplot as plt
 from app.model.carro import Carro
