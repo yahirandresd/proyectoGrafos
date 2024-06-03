@@ -1,4 +1,4 @@
-from tipos_carro import Escolta, Pequeño, Grande
+from app.model.tipos_carro import Escolta, Pequeño, Grande, Ladron
 
 class Carro:
     def __init__(self, tipo):
@@ -12,5 +12,10 @@ class Carro:
         elif self.tipo == 'escolta':
             self.carro = Escolta()
 
-carro = Carro('grande')
-print(carro.carro.__dict__)
+    def get_carro(self):
+        return self.carro
+    
+    def set_carro(self, carro):
+        self.carro = carro
+
+        
