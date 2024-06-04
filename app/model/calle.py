@@ -1,6 +1,3 @@
-import matplotlib
-matplotlib.use('TkAgg')  # Cambia TkAgg por otro backend si es necesario
-
 import networkx as nx
 from app.model.centro_operacion import Centro_Operacion
 import random
