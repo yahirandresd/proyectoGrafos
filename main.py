@@ -84,7 +84,7 @@ class Main:
             self.canvas.draw()
 
     def run(self):
-        self.root.geometry("1280x720")
+        self.root.geometry("1280x720")  # Establece el tamaño de la ventana principal (ancho x alto)
         self.root.mainloop()  # Inicia el bucle principal de Tkinter
 
 
