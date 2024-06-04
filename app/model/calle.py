@@ -20,7 +20,7 @@ class Calle:
         self.crear_calle()
 
     def crear_calle(self):
-        for i in range(16):
+        for i in range(len(self.edificios)):
             self.crear_ubicacion()
             self.ubicaciones.append(self.edificios[i])
             self.calle.add_node(self.edificios[i])
