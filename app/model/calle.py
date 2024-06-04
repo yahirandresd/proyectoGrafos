@@ -2,8 +2,6 @@ import matplotlib
 matplotlib.use('TkAgg')  # Cambia TkAgg por otro backend si es necesario
 
 import networkx as nx
-import matplotlib.pyplot as plt
-from app.model.carro import Carro
 from app.model.centro_operacion import Centro_Operacion
 import random
 
@@ -40,7 +38,6 @@ class Calle:
         node_colors = ['red' if nodo in self.centros else 'blue' for nodo in self.calle.nodes]
 
         nx.draw(self.calle, with_labels=True, node_color=node_colors, node_size=500)
-        plt.show()
 
     def crear_ubicacion(self):
         centro = Centro_Operacion()
