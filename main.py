@@ -4,7 +4,6 @@ matplotlib.use('TkAgg')  # Cambia TkAgg por otro backend si es necesario
 import tkinter as tk
 from tkinter import ttk
 import networkx as nx
-import random
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.animation import FuncAnimation
@@ -17,33 +16,50 @@ class Main:
         self.root.title("Planificador de Rutas")
         self.calle = Calle()
 
+        # Crear un Frame para la entrada de nodos y el Spinbox
+        self.input_frame = tk.Frame(self.root)
+        self.input_frame.pack(pady=10)
+
         # Crear interfaz de selección de nodos
-        self.start_label = tk.Label(self.root, text="Nodo de Inicio")
-        self.start_label.pack()
-        self.start_node = ttk.Combobox(self.root, values=self.calle.edificios)
-        self.start_node.pack()
+        self.start_label = tk.Label(self.input_frame, text="Nodo de Inicio")
+        self.start_label.grid(row=0, column=0, padx=5)
+        self.start_node = ttk.Combobox(self.input_frame, values=self.calle.ubicaciones, state="readonly")
+        self.start_node.grid(row=0, column=1, padx=5)
 
-        self.end_label = tk.Label(self.root, text="Nodo de Destino")
-        self.end_label.pack()
-        self.end_node = ttk.Combobox(self.root, values=self.calle.edificios)
-        self.end_node.pack()
+        self.end_label = tk.Label(self.input_frame, text="Nodo de Destino")
+        self.end_label.grid(row=1, column=0, padx=5)
+        self.end_node = ttk.Combobox(self.input_frame, values=self.calle.ubicaciones, state="readonly")
+        self.end_node.grid(row=1, column=1, padx=5)
 
-        self.button = tk.Button(self.root, text="Empezar Ruta", command=self.start_route)
-        self.button.pack()
+        self.button = tk.Button(self.input_frame, text="Empezar Ruta", command=self.start_route)
+        self.button.grid(row=2, column=0, columnspan=2, pady=10)
+
+        # Agregar el Spinbox para ingresar la cantidad
+        self.amount_label = tk.Label(self.input_frame, text="Cantidad (10 a 100)")
+        self.amount_label.grid(row=0, column=2, padx=5)
+        self.amount_spinbox = tk.Spinbox(self.input_frame, from_=0, to=100, validate="all", validatecommand=(self.root.register(self.validate_spinbox), '%P'))
+        self.amount_spinbox.grid(row=0, column=3, padx=5)
 
         # Crear el gráfico
         self.figure, self.ax = plt.subplots()
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.root)
-        self.canvas.get_tk_widget().pack()
+        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
         self.draw_graph()
+
+    def validate_spinbox(self, value):
+        # Ensure the value is numeric and within the specified range
+        if value.isdigit():
+            num = int(value)
+            if 0 <= num <= 100:
+                return True
+        return False
 
     def draw_graph(self):
         self.ax.clear()
         self.figure.set_size_inches(20, 8)  # Establece el tamaño de la figura
         self.pos = nx.spring_layout(self.calle.calle)
-        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500,
-                ax=self.ax)
+        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500, ax=self.ax)
         self.canvas.draw()
         # Ajusta el tamaño del recuadro del lienzo de Tkinter para que se expanda y llene el espacio disponible
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
@@ -84,7 +100,7 @@ class Main:
             self.canvas.draw()
 
     def run(self):
-        self.root.geometry("1280x720")  # Establece el tamaño de la ventana principal (ancho x alto)
+        self.root.geometry("1420x920")  # Establece el tamaño de la ventana principal (ancho x alto)
         self.root.mainloop()  # Inicia el bucle principal de Tkinter
 
 
