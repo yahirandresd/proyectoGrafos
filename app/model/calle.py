@@ -40,7 +40,6 @@ class Calle:
             ('green' if nodo in [cliente.nombre for cliente in self.clientes] else 'blue')
             for nodo in self.calle.nodes
         ]
-        nx.draw(self.calle)
 
     def crear_cliente(self):
         cliente = Cliente()
