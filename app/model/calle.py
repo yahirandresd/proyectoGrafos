@@ -25,8 +25,6 @@ class Calle:
                 self.crear_nodo(self.edificios[2*i+1])
             self.crear_cliente()
 
-        print(self.ubicaciones)
-
         for i in range(0, len(self.ubicaciones)-1):
             if (i+1) % 5 != 0: #si es el último
                 self.crear_aristas(self.ubicaciones[i], self.ubicaciones[i+1])
