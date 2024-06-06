@@ -4,13 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0f25c4ff-c884-47c6-b194-197de536501a" name="Changes" comment="boff le meti duro cabron">
+    <list default="true" id="0f25c4ff-c884-47c6-b194-197de536501a" name="Changes" comment="sale spinbox">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/controllers/vehiculo_controller.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/app/model/calle.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/model/calle.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/views/interfaz.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -132,7 +128,15 @@
       <option name="project" value="LOCAL" />
       <updated>1717531854225</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="sale spinbox">
+      <option name="closed" value="true" />
+      <created>1717717536345</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1717717536345</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -150,6 +154,7 @@
     <MESSAGE value="se añaden carpetas" />
     <MESSAGE value="28/05/2024" />
     <MESSAGE value="boff le meti duro cabron" />
-    <option name="LAST_COMMIT_MESSAGE" value="boff le meti duro cabron" />
+    <MESSAGE value="sale spinbox" />
+    <option name="LAST_COMMIT_MESSAGE" value="sale spinbox" />
   </component>
 </project>
