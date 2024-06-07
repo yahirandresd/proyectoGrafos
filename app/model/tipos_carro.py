@@ -1,7 +1,12 @@
 class Grande:
     def __init__(self, contenedor):
         self.velocidad = 0
-        self.capacidad = contenedor
+        if contenedor == 3:
+            self.capacidad = 100000000
+        elif contenedor == 2:
+            self.capacidad = 50000000
+        else:
+            self.capacidad = 20000000
         self.escoltas = 2
         self.escudo = 20
         self.ataque = 15
@@ -9,15 +14,21 @@ class Grande:
 class Pequeño:
     def __init__(self, contenedor):
         self.velocidad = 1
-        self.capacidad = contenedor
+        if contenedor == 3:
+            self.capacidad = 100000000
+        elif contenedor == 2:
+            self.capacidad = 50000000
+        else:
+            self.capacidad = 20000000
         self.escoltas = 1
         self.escudo = 5
         self.ataque = 10
 
 class Escolta:
-    def __init__(self):
+    def __init__(self, velocidad):
         self.escudo = 5
         self.ataque = 5
+        self.velocidad = velocidad
 
 class Ladron:
     def __init__(self):
