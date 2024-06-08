@@ -1,8 +1,8 @@
 import random
 
 class Cliente:
-    def __init__(self):
-        self.nombre = self.asignar_nombre()
+    def __init__(self, nombre=None):
+        self.nombre = nombre if nombre else self.asignar_nombre()
         self.dinero_recogido = random.randint(10000000, 100000000) #entre 10 y 100 millones
 
     def asignar_nombre(self):
