@@ -17,15 +17,24 @@ class Pequeño:
         self.escudo = 5
         self.ataque = 10
 
+    def actualizar_posicion(self, nueva_posicion):
+        self.posicion_actual = nueva_posicion
+
 class Escolta:
     def __init__(self):
         self.escudo = 5
         self.ataque = 5
 
+    def actualizar_posicion(self, nueva_posicion):
+        self.posicion_actual = nueva_posicion
+
 class Ladron:
     def __init__(self):
         self.escudo = 0
         self.ataque = 0
+
+    def actualizar_posicion(self, nueva_posicion):
+        self.posicion_actual = nueva_posicion
 
     def get_escudo(self):
         return self.escudo
