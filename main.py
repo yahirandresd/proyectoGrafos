@@ -7,7 +7,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.animation import FuncAnimation
-from app.model.calle import Calle  # Asegúrate de que esta ruta sea correcta
+from app.model.calle_nueva import Calle  # Asegúrate de que esta ruta sea correcta
 
 
 class Main:
@@ -59,7 +59,8 @@ class Main:
         self.ax.clear()
         self.figure.set_size_inches(20, 8)  # Establece el tamaño de la figura
         self.pos = nx.spring_layout(self.calle.calle)
-        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500, ax=self.ax)
+        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500, edge_color = self.calle.edge_colors, ax=self.ax)
+        nx.draw_networkx_edge_labels(self.calle.calle, self.pos, edge_labels=self.calle.edge_labels)
         self.canvas.draw()
         # Ajusta el tamaño del recuadro del lienzo de Tkinter para que se expanda y llene el espacio disponible
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
