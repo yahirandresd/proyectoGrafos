@@ -1,0 +1,266 @@
+Index: app/model/tipos_carro.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>class Grande:\r\n    def __init__(self, contenedor):\r\n        self.velocidad = 0\r\n        self.capacidad = contenedor\r\n        self.escoltas = 2\r\n        self.escudo = 20\r\n        self.ataque = 15\r\n\r\nclass Pequeño:\r\n    def __init__(self, contenedor):\r\n        self.velocidad = 1\r\n        self.capacidad = contenedor\r\n        self.escoltas = 1\r\n        self.escudo = 5\r\n        self.ataque = 10\r\n\r\nclass Escolta:\r\n    def __init__(self):\r\n        self.escudo = 5\r\n        self.ataque = 5\r\n\r\nclass Ladron:\r\n    def __init__(self):\r\n        self.escudo = 0\r\n        self.ataque = 0\r\n\r\n    def get_escudo(self):\r\n        return self.escudo\r\n    \r\n    def set_escudo(self, escudo):\r\n        self.escudo = escudo\r\n\r\n    def get_ataque(self):\r\n        return self.ataque\r\n    \r\n    def set_ataque(self, ataque):\r\n        self.ataque = ataque\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/app/model/tipos_carro.py b/app/model/tipos_carro.py
+--- a/app/model/tipos_carro.py	(revision 64f082c0e89da6312d08f98167e85456e7aa7e9d)
++++ b/app/model/tipos_carro.py	(date 1717737724450)
+@@ -1,14 +1,17 @@
+ class Grande:
+     def __init__(self, contenedor):
+-        self.velocidad = 0
++        self.velocidad = 1
+         self.capacidad = contenedor
+         self.escoltas = 2
+         self.escudo = 20
+         self.ataque = 15
+ 
++    def actualizar_posicion(self, nueva_posicion):
++        self.posicion_actual = nueva_posicion
++
+ class Pequeño:
+     def __init__(self, contenedor):
+-        self.velocidad = 1
++        self.velocidad = 3
+         self.capacidad = contenedor
+         self.escoltas = 1
+         self.escudo = 5
+Index: main.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>import matplotlib\r\nmatplotlib.use('TkAgg')  # Cambia TkAgg por otro backend si es necesario\r\n\r\nimport tkinter as tk\r\nfrom tkinter import ttk\r\nimport networkx as nx\r\nimport matplotlib.pyplot as plt\r\nfrom matplotlib.backends.backend_tkagg import FigureCanvasTkAgg\r\nfrom matplotlib.animation import FuncAnimation\r\nfrom app.model.calle import Calle  # Asegúrate de que esta ruta sea correcta\r\n\r\n\r\nclass Main:\r\n    def __init__(self):\r\n        self.root = tk.Tk()\r\n        self.root.title(\"Planificador de Rutas\")\r\n        self.calle = Calle()\r\n\r\n        # Crear un Frame para la entrada de nodos y el Spinbox\r\n        self.input_frame = tk.Frame(self.root)\r\n        self.input_frame.pack(pady=10)\r\n\r\n        # Crear interfaz de selección de nodos\r\n        self.start_label = tk.Label(self.input_frame, text=\"Nodo de Inicio\")\r\n        self.start_label.grid(row=0, column=0, padx=5)\r\n        self.start_node = ttk.Combobox(self.input_frame, values=self.calle.ubicaciones, state=\"readonly\")\r\n        self.start_node.grid(row=0, column=1, padx=5)\r\n\r\n        self.end_label = tk.Label(self.input_frame, text=\"Nodo de Destino\")\r\n        self.end_label.grid(row=1, column=0, padx=5)\r\n        self.end_node = ttk.Combobox(self.input_frame, values=self.calle.ubicaciones, state=\"readonly\")\r\n        self.end_node.grid(row=1, column=1, padx=5)\r\n\r\n        self.button = tk.Button(self.input_frame, text=\"Empezar Ruta\", command=self.start_route)\r\n        self.button.grid(row=2, column=0, columnspan=2, pady=10)\r\n\r\n        # Agregar el Spinbox para ingresar la cantidad\r\n        self.amount_label = tk.Label(self.input_frame, text=\"Cantidad (10 a 100)\")\r\n        self.amount_label.grid(row=0, column=2, padx=5)\r\n        self.amount_spinbox = tk.Spinbox(self.input_frame, from_=0, to=100, validate=\"all\", validatecommand=(self.root.register(self.validate_spinbox), '%P'))\r\n        self.amount_spinbox.grid(row=0, column=3, padx=5)\r\n\r\n        # Crear el gráfico\r\n        self.figure, self.ax = plt.subplots()\r\n        self.canvas = FigureCanvasTkAgg(self.figure, master=self.root)\r\n        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)\r\n\r\n        self.draw_graph()\r\n\r\n    def validate_spinbox(self, value):\r\n        # Ensure the value is numeric and within the specified range\r\n        if value.isdigit():\r\n            num = int(value)\r\n            if 0 <= num <= 100:\r\n                return True\r\n        return False\r\n\r\n    def draw_graph(self):\r\n        self.ax.clear()\r\n        self.figure.set_size_inches(20, 8)  # Establece el tamaño de la figura\r\n        self.pos = nx.spring_layout(self.calle.calle)\r\n        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500, ax=self.ax)\r\n        self.canvas.draw()\r\n        # Ajusta el tamaño del recuadro del lienzo de Tkinter para que se expanda y llene el espacio disponible\r\n        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)\r\n\r\n    def start_route(self):\r\n        start = self.start_node.get()\r\n        end = self.end_node.get()\r\n        if start and end:\r\n            try:\r\n                self.path = nx.shortest_path(self.calle.calle, source=start, target=end)\r\n                self.animate_path()\r\n            except nx.NetworkXNoPath:\r\n                print(\"No existe una ruta entre los nodos seleccionados.\")\r\n        else:\r\n            print(\"Seleccione nodos válidos.\")\r\n\r\n    def animate_path(self):\r\n        self.show_path(self.path)\r\n        self.anim = FuncAnimation(self.figure, self.update_animation, frames=len(self.path), interval=500, repeat=False)\r\n        self.canvas.draw()\r\n\r\n    def show_path(self, path):\r\n        self.ax.clear()\r\n        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500, ax=self.ax)\r\n        path_edges = list(zip(path, path[1:]))\r\n        nx.draw_networkx_edges(self.calle.calle, self.pos, edgelist=path_edges, edge_color='green', width=2.0, ax=self.ax)\r\n        self.canvas.draw()\r\n\r\n    def update_animation(self, i):\r\n        if i < len(self.path):\r\n            self.ax.clear()\r\n            nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500, ax=self.ax)\r\n            path_edges = list(zip(self.path, self.path[1:]))\r\n            nx.draw_networkx_edges(self.calle.calle, self.pos, edgelist=path_edges, edge_color='green', width=2.0, ax=self.ax)\r\n            current_node = self.path[i]\r\n            current_pos = self.pos[current_node]\r\n            self.ax.plot(current_pos[0], current_pos[1], 'ro', markersize=12)  # Circle representing the moving point\r\n            self.canvas.draw()\r\n\r\n    def run(self):\r\n        self.root.geometry(\"1420x920\")  # Establece el tamaño de la ventana principal (ancho x alto)\r\n        self.root.mainloop()  # Inicia el bucle principal de Tkinter\r\n\r\n\r\nif __name__ == \"__main__\":\r\n    app = Main()\r\n    app.run()\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main.py b/main.py
+--- a/main.py	(revision 64f082c0e89da6312d08f98167e85456e7aa7e9d)
++++ b/main.py	(date 1717805831134)
+@@ -1,14 +1,16 @@
+ import matplotlib
+-matplotlib.use('TkAgg')  # Cambia TkAgg por otro backend si es necesario
++matplotlib.use('TkAgg')
+ 
+ import tkinter as tk
+ from tkinter import ttk
+ import networkx as nx
++import os
++import matplotlib.image as mpimg
+ import matplotlib.pyplot as plt
+ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+ from matplotlib.animation import FuncAnimation
+ from app.model.calle import Calle  # Asegúrate de que esta ruta sea correcta
+-
++from app.model.carro import Carro  # Importar la clase Carro desde carro.py
+ 
+ class Main:
+     def __init__(self):
+@@ -16,11 +18,10 @@
+         self.root.title("Planificador de Rutas")
+         self.calle = Calle()
+ 
+-        # Crear un Frame para la entrada de nodos y el Spinbox
+         self.input_frame = tk.Frame(self.root)
+         self.input_frame.pack(pady=10)
++        self.car_scale = 0.2  # Ajusta este valor según sea necesario
+ 
+-        # Crear interfaz de selección de nodos
+         self.start_label = tk.Label(self.input_frame, text="Nodo de Inicio")
+         self.start_label.grid(row=0, column=0, padx=5)
+         self.start_node = ttk.Combobox(self.input_frame, values=self.calle.ubicaciones, state="readonly")
+@@ -34,21 +35,32 @@
+         self.button = tk.Button(self.input_frame, text="Empezar Ruta", command=self.start_route)
+         self.button.grid(row=2, column=0, columnspan=2, pady=10)
+ 
+-        # Agregar el Spinbox para ingresar la cantidad
+         self.amount_label = tk.Label(self.input_frame, text="Cantidad (10 a 100)")
+         self.amount_label.grid(row=0, column=2, padx=5)
+         self.amount_spinbox = tk.Spinbox(self.input_frame, from_=0, to=100, validate="all", validatecommand=(self.root.register(self.validate_spinbox), '%P'))
+         self.amount_spinbox.grid(row=0, column=3, padx=5)
+ 
+-        # Crear el gráfico
+         self.figure, self.ax = plt.subplots()
+         self.canvas = FigureCanvasTkAgg(self.figure, master=self.root)
+         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
++         # Límites iniciales de eje y
+ 
++        # Crear instancia de Carro con tipo 'grande', puedes cambiar el tipo según sea necesario
++        self.carro = Carro('grande')
+         self.draw_graph()
+ 
++        # Ruta de la carpeta de imágenes
++        image_folder = os.path.join(os.path.dirname(__file__), 'images')
++
++        # Carga las imágenes del vehículo para cada tipo de carro
++        self.car_images = {
++            'grande': mpimg.imread(os.path.join(image_folder, 'cGran.png')),
++            'pequeño': mpimg.imread(os.path.join(image_folder, 'cPeque.png')),
++            #'escolta': mpimg.imread(os.path.join(image_folder, 'imagen_escolta.png')),
++            #'ladron': mpimg.imread(os.path.join(image_folder, 'imagen_ladron.png'))
++        }
++
+     def validate_spinbox(self, value):
+-        # Ensure the value is numeric and within the specified range
+         if value.isdigit():
+             num = int(value)
+             if 0 <= num <= 100:
+@@ -59,10 +71,10 @@
+         self.ax.clear()
+         self.figure.set_size_inches(20, 8)  # Establece el tamaño de la figura
+         self.pos = nx.spring_layout(self.calle.calle)
+-        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500, ax=self.ax)
++        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500,
++                ax=self.ax)
++        # Establece límites de eje y
+         self.canvas.draw()
+-        # Ajusta el tamaño del recuadro del lienzo de Tkinter para que se expanda y llene el espacio disponible
+-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+ 
+     def start_route(self):
+         start = self.start_node.get()
+@@ -70,39 +82,64 @@
+         if start and end:
+             try:
+                 self.path = nx.shortest_path(self.calle.calle, source=start, target=end)
++                self.interpolated_positions = self.interpolate_positions(self.path)
++                self.carro.get_carro().posicion_actual = self.interpolated_positions[0]  # Inicializa la posición del carro
+                 self.animate_path()
+             except nx.NetworkXNoPath:
+                 print("No existe una ruta entre los nodos seleccionados.")
+         else:
+             print("Seleccione nodos válidos.")
+ 
++    def interpolate_positions(self, path):
++        interpolated_positions = []
++        for i in range(len(path) - 1):
++            start_pos = self.pos[path[i]]
++            end_pos = self.pos[path[i + 1]]
++            steps = 20  # Número de pasos de interpolación
++            for j in range(steps):
++                interp_pos = start_pos + (end_pos - start_pos) * j / steps
++                interpolated_positions.append(interp_pos)
++        return interpolated_positions
++
+     def animate_path(self):
+-        self.show_path(self.path)
+-        self.anim = FuncAnimation(self.figure, self.update_animation, frames=len(self.path), interval=500, repeat=False)
+-        self.canvas.draw()
+-
+-    def show_path(self, path):
+-        self.ax.clear()
+-        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500, ax=self.ax)
+-        path_edges = list(zip(path, path[1:]))
+-        nx.draw_networkx_edges(self.calle.calle, self.pos, edgelist=path_edges, edge_color='green', width=2.0, ax=self.ax)
++        velocidad = self.carro.get_carro().velocidad
++        frames = len(self.interpolated_positions) // velocidad
++        self.anim = FuncAnimation(self.figure, self.update_animation, frames=frames, interval=50, repeat=False)
+         self.canvas.draw()
+ 
+     def update_animation(self, i):
+-        if i < len(self.path):
+-            self.ax.clear()
+-            nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500, ax=self.ax)
+-            path_edges = list(zip(self.path, self.path[1:]))
+-            nx.draw_networkx_edges(self.calle.calle, self.pos, edgelist=path_edges, edge_color='green', width=2.0, ax=self.ax)
+-            current_node = self.path[i]
+-            current_pos = self.pos[current_node]
+-            self.ax.plot(current_pos[0], current_pos[1], 'ro', markersize=12)  # Circle representing the moving point
+-            self.canvas.draw()
++        self.ax.clear()
++        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500,
++                ax=self.ax)
++        path_edges = list(zip(self.path, self.path[1:]))
++        nx.draw_networkx_edges(self.calle.calle, self.pos, edgelist=path_edges, edge_color='green', width=2.0,
++                               ax=self.ax)
++        self.ax.set_xlim(-1, 1)  # Establece límites de eje x
++        self.ax.set_ylim(-1, 1)  # Establece límites de eje y
++
++
++        if i < len(self.interpolated_positions):
++            pos_index = i * self.carro.get_carro().velocidad
++            if pos_index < len(self.interpolated_positions):
++                self.carro.get_carro().actualizar_posicion(self.interpolated_positions[pos_index])
++                current_pos = self.carro.get_carro().posicion_actual
++                carro_tipo = self.carro.tipo  # Obtener el tipo de carro actual
++
++                # Mostrar la imagen del carro con el tamaño ajustado
++                if carro_tipo in self.car_images:
++                    image = self.car_images[carro_tipo]
++                    self.ax.imshow(image, extent=[current_pos[0] - 0.5 * self.car_scale,
++                                                  current_pos[0] + 0.5 * self.car_scale,
++                                                  current_pos[1] - 0.5 * self.car_scale,
++                                                  current_pos[1] + 0.5 * self.car_scale])
++                else:
++                    print("Imagen no encontrada para el tipo de carro:", carro_tipo)
++
++        self.canvas.draw()
+ 
+     def run(self):
+-        self.root.geometry("1420x920")  # Establece el tamaño de la ventana principal (ancho x alto)
+-        self.root.mainloop()  # Inicia el bucle principal de Tkinter
+-
++        self.root.geometry("1420x920")
++        self.root.mainloop()
+ 
+ if __name__ == "__main__":
+     app = Main()
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"0f25c4ff-c884-47c6-b194-197de536501a\" name=\"Changes\" comment=\"sale spinbox\">\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/app/model/calle.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/app/model/calle.py\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"FileTemplateManagerImpl\">\r\n    <option name=\"RECENT_TEMPLATES\">\r\n      <list>\r\n        <option value=\"Python Script\" />\r\n      </list>\r\n    </option>\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"PUSH_AUTO_UPDATE\" value=\"true\" />\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n  </component>\r\n  <component name=\"GitHubPullRequestSearchHistory\">{\r\n  &quot;lastFilter&quot;: {\r\n    &quot;state&quot;: &quot;OPEN&quot;,\r\n    &quot;assignee&quot;: &quot;yahirandresd&quot;\r\n  }\r\n}</component>\r\n  <component name=\"GithubPullRequestsUISettings\">{\r\n  &quot;selectedUrlAndAccountId&quot;: {\r\n    &quot;url&quot;: &quot;https://github.com/yahirandresd/proyectoGrafos.git&quot;,\r\n    &quot;accountId&quot;: &quot;4bc97792-d3ed-4dfd-8080-8a236ff59460&quot;\r\n  }\r\n}</component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;associatedIndex&quot;: 6\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"2gtqDZEBIOtgkfk4VJBbOd4Ddwa\" />\r\n  <component name=\"ProjectLevelVcsManager\" settingsEditedManually=\"true\">\r\n    <ConfirmationsSetting value=\"2\" id=\"Add\" />\r\n  </component>\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\">{\r\n  &quot;keyToString&quot;: {\r\n    &quot;Python.calle.executor&quot;: &quot;Run&quot;,\r\n    &quot;Python.main.executor&quot;: &quot;Run&quot;,\r\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\r\n    &quot;git-widget-placeholder&quot;: &quot;master&quot;,\r\n    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;\r\n  }\r\n}</component>\r\n  <component name=\"RunManager\">\r\n    <configuration name=\"main\" type=\"PythonConfigurationType\" factoryName=\"Python\" nameIsGenerated=\"true\">\r\n      <module name=\"proyectoGrafos\" />\r\n      <option name=\"ENV_FILES\" value=\"\" />\r\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\r\n      <option name=\"PARENT_ENVS\" value=\"true\" />\r\n      <envs>\r\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\r\n      </envs>\r\n      <option name=\"SDK_HOME\" value=\"\" />\r\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$\" />\r\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\r\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\r\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\r\n      <option name=\"SCRIPT_NAME\" value=\"$PROJECT_DIR$/main.py\" />\r\n      <option name=\"PARAMETERS\" value=\"\" />\r\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\r\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\r\n      <option name=\"MODULE_MODE\" value=\"false\" />\r\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\r\n      <option name=\"INPUT_FILE\" value=\"\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n  </component>\r\n  <component name=\"SharedIndexes\">\r\n    <attachedChunks>\r\n      <set>\r\n        <option value=\"bundled-python-sdk-0509580d9d50-746f403e7f0c-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-241.14494.241\" />\r\n      </set>\r\n    </attachedChunks>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"0f25c4ff-c884-47c6-b194-197de536501a\" name=\"Changes\" comment=\"\" />\r\n      <created>1716527102490</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1716527102490</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00001\" summary=\"se añaden carpetas\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1716957557269</created>\r\n      <option name=\"number\" value=\"00001\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1716957557269</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00002\" summary=\"28/05/2024\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1716957982094</created>\r\n      <option name=\"number\" value=\"00002\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00002\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1716957982094</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00003\" summary=\"boff le meti duro cabron\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1717531406617</created>\r\n      <option name=\"number\" value=\"00003\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00003\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1717531406617</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00004\" summary=\"boff le meti duro cabron\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1717531854225</created>\r\n      <option name=\"number\" value=\"00004\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00004\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1717531854225</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00005\" summary=\"sale spinbox\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1717717536345</created>\r\n      <option name=\"number\" value=\"00005\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00005\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1717717536345</updated>\r\n    </task>\r\n    <option name=\"localTasksCounter\" value=\"6\" />\r\n    <servers />\r\n  </component>\r\n  <component name=\"Vcs.Log.Tabs.Properties\">\r\n    <option name=\"TAB_STATES\">\r\n      <map>\r\n        <entry key=\"MAIN\">\r\n          <value>\r\n            <State />\r\n          </value>\r\n        </entry>\r\n      </map>\r\n    </option>\r\n  </component>\r\n  <component name=\"VcsManagerConfiguration\">\r\n    <MESSAGE value=\"se añaden carpetas\" />\r\n    <MESSAGE value=\"28/05/2024\" />\r\n    <MESSAGE value=\"boff le meti duro cabron\" />\r\n    <MESSAGE value=\"sale spinbox\" />\r\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"sale spinbox\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 64f082c0e89da6312d08f98167e85456e7aa7e9d)
++++ b/.idea/workspace.xml	(date 1717873426332)
+@@ -4,9 +4,10 @@
+     <option name="autoReloadType" value="SELECTIVE" />
+   </component>
+   <component name="ChangeListManager">
+-    <list default="true" id="0f25c4ff-c884-47c6-b194-197de536501a" name="Changes" comment="sale spinbox">
++    <list default="true" id="0f25c4ff-c884-47c6-b194-197de536501a" name="Changes" comment="sale spinbox 2.0">
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/app/model/calle.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/model/calle.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/app/model/tipos_carro.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/model/tipos_carro.py" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -136,7 +137,23 @@
+       <option name="project" value="LOCAL" />
+       <updated>1717717536345</updated>
+     </task>
+-    <option name="localTasksCounter" value="6" />
++    <task id="LOCAL-00006" summary="sale spinbox 2.0">
++      <option name="closed" value="true" />
++      <created>1717718194871</created>
++      <option name="number" value="00006" />
++      <option name="presentableId" value="LOCAL-00006" />
++      <option name="project" value="LOCAL" />
++      <updated>1717718194871</updated>
++    </task>
++    <task id="LOCAL-00007" summary="sale spinbox 2.0">
++      <option name="closed" value="true" />
++      <created>1717718204863</created>
++      <option name="number" value="00007" />
++      <option name="presentableId" value="LOCAL-00007" />
++      <option name="project" value="LOCAL" />
++      <updated>1717718204863</updated>
++    </task>
++    <option name="localTasksCounter" value="8" />
+     <servers />
+   </component>
+   <component name="Vcs.Log.Tabs.Properties">
+@@ -155,6 +172,7 @@
+     <MESSAGE value="28/05/2024" />
+     <MESSAGE value="boff le meti duro cabron" />
+     <MESSAGE value="sale spinbox" />
+-    <option name="LAST_COMMIT_MESSAGE" value="sale spinbox" />
++    <MESSAGE value="sale spinbox 2.0" />
++    <option name="LAST_COMMIT_MESSAGE" value="sale spinbox 2.0" />
+   </component>
+ </project>
+\ No newline at end of file

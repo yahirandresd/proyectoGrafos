@@ -1,0 +1,53 @@
+Index: main.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+># Importar las bibliotecas necesarias\r\nimport mesa\r\nimport networkx as nx\r\nimport matplotlib.pyplot as plt\r\n\r\n# Crear una clase de agente\r\nclass GraphAgent(mesa.Agent):\r\n    def __init__(self, unique_id, model):\r\n        super().__init__(unique_id, model)\r\n\r\n    def step(self):\r\n        # Definir el comportamiento del agente en cada paso\r\n        pass\r\n\r\n# Crear una clase de modelo\r\nclass GraphModel(mesa.Model):\r\n    def __init__(self, N):\r\n        self.num_agents = N\r\n        self.schedule = mesa.time.RandomActivation(self)\r\n\r\n        # Crear una red de grafos utilizando NetworkX\r\n        self.graph = nx.erdos_renyi_graph(n=N, p=0.1)\r\n\r\n        # Crear agentes y añadirlos al modelo\r\n        for i in range(self.num_agents):\r\n            agent = GraphAgent(i, self)\r\n            self.schedule.add(agent)\r\n\r\n    def step(self):\r\n        self.schedule.step()\r\n\r\n# Inicializar y ejecutar el modelo\r\nnum_agents = 10\r\nmodel = GraphModel(num_agents)\r\n\r\nfor i in range(10):\r\n    model.step()\r\n\r\n# Dibujar el grafo utilizando Matplotlib\r\npos = nx.spring_layout(model.graph)\r\nnx.draw(model.graph, pos, with_labels=True)\r\nplt.show()\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main.py b/main.py
+--- a/main.py	
++++ b/main.py	
+@@ -1,42 +1,0 @@
+-# Importar las bibliotecas necesarias
+-import mesa
+-import networkx as nx
+-import matplotlib.pyplot as plt
+-
+-# Crear una clase de agente
+-class GraphAgent(mesa.Agent):
+-    def __init__(self, unique_id, model):
+-        super().__init__(unique_id, model)
+-
+-    def step(self):
+-        # Definir el comportamiento del agente en cada paso
+-        pass
+-
+-# Crear una clase de modelo
+-class GraphModel(mesa.Model):
+-    def __init__(self, N):
+-        self.num_agents = N
+-        self.schedule = mesa.time.RandomActivation(self)
+-
+-        # Crear una red de grafos utilizando NetworkX
+-        self.graph = nx.erdos_renyi_graph(n=N, p=0.1)
+-
+-        # Crear agentes y añadirlos al modelo
+-        for i in range(self.num_agents):
+-            agent = GraphAgent(i, self)
+-            self.schedule.add(agent)
+-
+-    def step(self):
+-        self.schedule.step()
+-
+-# Inicializar y ejecutar el modelo
+-num_agents = 10
+-model = GraphModel(num_agents)
+-
+-for i in range(10):
+-    model.step()
+-
+-# Dibujar el grafo utilizando Matplotlib
+-pos = nx.spring_layout(model.graph)
+-nx.draw(model.graph, pos, with_labels=True)
+-plt.show()
