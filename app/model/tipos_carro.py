@@ -1,14 +1,17 @@
 class Grande:
     def __init__(self, contenedor):
-        self.velocidad = 0
+        self.velocidad = 1
         self.capacidad = contenedor
         self.escoltas = 2
         self.escudo = 20
         self.ataque = 15
 
+    def actualizar_posicion(self, nueva_posicion):
+        self.posicion_actual = nueva_posicion
+
 class Pequeño:
     def __init__(self, contenedor):
-        self.velocidad = 1
+        self.velocidad = 2
         self.capacidad = contenedor
         self.escoltas = 1
         self.escudo = 5

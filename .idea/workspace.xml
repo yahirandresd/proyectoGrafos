@@ -6,7 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="0f25c4ff-c884-47c6-b194-197de536501a" name="Changes" comment="sale spinbox">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/model/calle.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/model/calle.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/model/centro_operacion.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/model/centro_operacion.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/model/cliente.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/model/cliente.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/model/tipos_carro.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/model/tipos_carro.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
