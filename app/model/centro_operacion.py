@@ -1,11 +1,11 @@
 import random
 
 class Centro_Operacion:
-    def __init__(self):
+    def __init__(self, nombre=None):
         self.capacidad_dinero = 0
         self.capacidad_vehiculos = 0
         self.capacidad_escoltas = 0
-        self.nombre = self.asignar_nombre_aleatorio()
+        self.nombre = nombre if nombre else self.asignar_nombre_aleatorio()
 
     def get_dinero(self):
         return self.capacidad_dinero
