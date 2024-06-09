@@ -3,6 +3,7 @@ matplotlib.use('TkAgg')
 
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 import networkx as nx
 import os
 import matplotlib.image as mpimg
@@ -78,13 +79,48 @@ class Main:
         if start and end:
             try:
                 self.path = nx.shortest_path(self.calle.calle, source=start, target=end)
-                self.interpolated_positions = self.interpolate_positions(self.path)
-                self.carro.get_carro().posicion_actual = self.interpolated_positions[0]
-                self.animate_path()
+                if self.revisar_pesos():
+                    self.interpolated_positions = self.interpolate_positions(self.path)
+                    self.carro.get_carro().posicion_actual = self.interpolated_positions[0]
+                    self.animate_path()
+                else:
+                    messagebox.showinfo('Atención', "El puente no puede soportar el peso del vehículo. Buscando ruta alternativa...")
+                    alternative_path = self.find_alternative_route(start, end)
+                    if alternative_path:
+                        self.path = alternative_path
+                        self.interpolated_positions = self.interpolate_positions(self.path)
+                        self.carro.get_carro().posicion_actual = self.interpolated_positions[0]
+                        self.animate_path()
             except nx.NetworkXNoPath:
                 print("No existe una ruta entre los nodos seleccionados.")
         else:
             print("Seleccione nodos válidos.")
+
+    def revisar_pesos(self):
+        for i in range(len(self.path) - 1):
+            start = self.path[i]
+            end = self.path[i + 1]
+            edge_data = self.calle.calle.get_edge_data(start, end)
+            if 'peso' in edge_data:
+                peso_maximo = edge_data['peso']
+            else:
+                return True
+            if self.carro.get_carro().capacidad > peso_maximo:
+                return False
+        return True
+    
+    def find_alternative_route(self, start, end):
+        G = self.calle.calle.copy()
+        for i in range(len(self.path) - 1):
+            edge_start = self.path[i]
+            edge_end = self.path[i + 1]
+            max_weight = G.edges[edge_start, edge_end]['peso']
+            if self.carro.get_carro().capacidad > max_weight:
+                G.remove_edge(edge_start, edge_end)
+        try:
+            return nx.shortest_path(G, source=start, target=end)
+        except nx.NetworkXNoPath:
+            return None
 
     def interpolate_positions(self, path):
         interpolated_positions = []
@@ -112,10 +148,15 @@ class Main:
 
     def update_animation(self, i):
         self.ax.clear()
-        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500, ax=self.ax)
+        
+        # Dibuja el grafo con los colores originales de las aristas
+        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500, edge_color=self.calle.edge_colors, ax=self.ax)
+        nx.draw_networkx_edge_labels(self.calle.calle, self.pos, edge_labels = self.calle.edge_labels, ax=self.ax)
+
+        # Obtén las aristas del camino y colóralas en verde
         path_edges = list(zip(self.path, self.path[1:]))
         nx.draw_networkx_edges(self.calle.calle, self.pos, edgelist=path_edges, edge_color='green', width=2.0, ax=self.ax)
-
+        
         self.ax.set_xlim(-1, 1)  # Establece límites de eje x
         self.ax.set_ylim(-1, 1)
 
@@ -129,13 +170,14 @@ class Main:
                 if carro_tipo in self.car_images:
                     image = self.car_images[carro_tipo]
                     self.ax.imshow(image, extent=[current_pos[0] - 0.5 * self.car_scale,
-                                                  current_pos[0] + 0.5 * self.car_scale,
-                                                  current_pos[1] - 0.5 * self.car_scale,
-                                                  current_pos[1] + 0.5 * self.car_scale])
+                                                current_pos[0] + 0.5 * self.car_scale,
+                                                current_pos[1] - 0.5 * self.car_scale,
+                                                current_pos[1] + 0.5 * self.car_scale])
                 else:
                     print("Imagen no encontrada para el tipo de carro:", carro_tipo)
 
         self.canvas.draw()
+
 
     def run(self):
         self.root.geometry("1420x920")
