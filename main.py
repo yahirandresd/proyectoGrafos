@@ -17,50 +17,45 @@ class Main:
     def __init__(self):
         self.root = tk.Tk()
         self.root.title("Planificador de Rutas")
+        self.root.geometry("1200x800")  # Configura el tamaño inicial de la ventana
+        self.root.grid_rowconfigure(1, weight=1)
+        self.root.grid_columnconfigure(0, weight=1)
+        self.root.grid_columnconfigure(1, weight=1)
+
         self.calle = Calle()
 
-        self.input_frame = tk.Frame(self.root)
-        self.input_frame.pack(pady=10)
+        self.button_frame = tk.Frame(self.root, width=1)
+        self.button_frame.grid(row=0, column=0, pady=10, sticky="ew")
+
+        self.order_button = tk.Button(self.button_frame, text="Hacer Orden", command=self.show_order_form)
+        self.order_button.grid(row=0, column=0, padx=5, pady=5)
+
+        self.car_stats_button = tk.Button(self.button_frame, text="Estadísticas del Carro", command=self.update_car_stats)
+        self.car_stats_button.grid(row=0, column=1, padx=5, pady=5)
+
+        self.center_stats_button = tk.Button(self.button_frame, text="Estadísticas de Centros", command=self.show_center_stats)
+        self.center_stats_button.grid(row=0, column=2, padx=5, pady=5)
+
         self.car_scale = 0.2
 
-        self.start_label = tk.Label(self.input_frame, text="Nodo de Inicio")
-        self.start_label.grid(row=0, column=0, padx=5)
-        self.start_node = ttk.Combobox(self.input_frame, values=self.calle.ubicaciones, state="readonly")
-        self.start_node.grid(row=0, column=1, padx=5)
+        self.carro_stats = tk.Text(self.root, state='disabled')
+        self.carro_stats.grid(row=1, column=0, padx=10, pady=10, columnspan=1, sticky="nsew")
 
-        self.end_label = tk.Label(self.input_frame, text="Nodo de Destino")
-        self.end_label.grid(row=1, column=0, padx=5)
-        self.end_node = ttk.Combobox(self.input_frame, values=self.calle.ubicaciones, state="readonly")
-        self.end_node.grid(row=1, column=1, padx=5)
-
-        self.button = tk.Button(self.input_frame, text="Empezar Ruta", command=self.start_route)
-        self.button.grid(row=2, column=0, columnspan=2, pady=10)
-
-        self.amount_label = tk.Label(self.input_frame, text="Cantidad (10 a 100)")
-        self.amount_label.grid(row=0, column=2, padx=5)
-        self.amount_spinbox = tk.Spinbox(self.input_frame, from_=0, to=100, validate="all", validatecommand=(self.root.register(self.validate_spinbox), '%P'))
-        self.amount_spinbox.grid(row=0, column=3, padx=5)
-
-        # vea acá están las estadísticas del carro ese
-
-        self.stats_text = tk.Text(self.input_frame, width=40, height=10, state='disabled')
-        self.stats_text.grid(row=0, column=4, rowspan=3)
+        self.centro_stats = tk.Text(self.root, state='disabled')
+        self.centro_stats.grid(row=1, column=1, padx=10, pady=10, columnspan=1, sticky="nsew")
 
         self.figure, self.ax = plt.subplots()
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.root)
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        self.canvas.get_tk_widget().grid(row=2, column=0, sticky="nsew")
 
         self.carro = Carro('pequeño')
         self.draw_graph()
-        self.update_car_stats()
 
         image_folder = os.path.join(os.path.dirname(__file__), 'images')
 
         self.car_images = {
             'grande': mpimg.imread(os.path.join(image_folder, 'cGran.png')),
             'pequeño': mpimg.imread(os.path.join(image_folder, 'cPeque.png')),
-            # 'escolta': mpimg.imread(os.path.join(image_folder, 'imagen_escolta.png')),
-            # 'ladron': mpimg.imread(os.path.join(image_folder, 'imagen_ladron.png'))
         }
 
     def validate_spinbox(self, value):
@@ -69,6 +64,43 @@ class Main:
             if 0 <= num <= 100:
                 return True
         return False
+    
+    def show_order_form(self):
+        self.order_window = tk.Toplevel(self.root)
+        self.order_window.title("Formulario de Orden")
+
+        self.start_label = tk.Label(self.order_window, text="Nodo de Inicio")
+        self.start_label.grid(row=0, column=0, padx=5)
+        self.start_node = ttk.Combobox(self.order_window, values=self.calle.ubicaciones, state="readonly")
+        self.start_node.grid(row=0, column=1, padx=5)
+
+        self.end_label = tk.Label(self.order_window, text="Nodo de Destino")
+        self.end_label.grid(row=1, column=0, padx=5)
+        self.end_node = ttk.Combobox(self.order_window, values=self.calle.ubicaciones, state="readonly")
+        self.end_node.grid(row=1, column=1, padx=5)
+
+        self.amount_label = tk.Label(self.order_window, text="Cantidad (10 a 100)")
+        self.amount_label.grid(row=2, column=0, padx=5)
+        self.amount_spinbox = tk.Spinbox(self.order_window, from_=0, to=100, validate="all", validatecommand=(self.root.register(self.validate_spinbox), '%P'))
+        self.amount_spinbox.grid(row=2, column=1, padx=5)
+
+        self.button = tk.Button(self.order_window, text="Empezar Ruta", command=self.start_route)
+        self.button.grid(row=3, column=0, columnspan=2, pady=10)
+
+    def show_center_stats(self):
+        for item in self.calle.centros:
+            print(item.nombre)
+            stats = f"{item.nombre}:\n"
+            stats += f"Capacidad de dinero: {item.capacidad_dinero}\n"
+            stats += f"Capacidad de escoltas: {item.capacidad_escoltas}\n"
+            stats += f"Capacidad de vehículos: {item.capacidad_vehiculos}\n"
+            stats += "\n"
+
+            self.centro_stats.config(state='normal')
+            self.centro_stats.insert(tk.END, stats)
+
+        self.centro_stats.config(state='disabled')
+
 
     def draw_graph(self):
         self.ax.clear()
@@ -77,7 +109,7 @@ class Main:
         nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500, edge_color=self.calle.edge_colors, ax=self.ax)
         nx.draw_networkx_edge_labels(self.calle.calle, self.pos, edge_labels=self.calle.edge_labels)
         self.canvas.draw()
-        self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        self.canvas.get_tk_widget().grid(row=2, column=0, columnspan=2, sticky="nsew")
 
     def start_route(self):
         start = self.start_node.get()
@@ -190,10 +222,10 @@ class Main:
         stats += f"Ataque: {self.carro.get_carro().ataque}\n"
         stats += f"Capacidad: {self.carro.get_carro().capacidad}\n"
         
-        self.stats_text.config(state='normal')
-        self.stats_text.delete('1.0', tk.END)
-        self.stats_text.insert(tk.END, stats)
-        self.stats_text.config(state='disabled')
+        self.carro_stats.config(state='normal')
+        self.carro_stats.delete('1.0', tk.END)
+        self.carro_stats.insert(tk.END, stats)
+        self.carro_stats.config(state='disabled')
 
     def run(self):
         self.root.geometry("1420x920")
