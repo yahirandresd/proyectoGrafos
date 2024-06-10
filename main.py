@@ -10,6 +10,7 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.animation import FuncAnimation
+import time
 from app.model.calle import Calle  # Asegúrate de que esta ruta sea correcta
 from app.model.carro import Carro
 
@@ -24,6 +25,12 @@ class Main:
 
         self.calle = Calle()
 
+        # la lista de rutas que van a tener los carros
+
+        self.ordenes = []
+
+        self.tiempo_transcurrido = 0
+
         self.button_frame = tk.Frame(self.root, width=1)
         self.button_frame.grid(row=0, column=0, pady=10, sticky="ew")
 
@@ -35,6 +42,9 @@ class Main:
 
         self.center_stats_button = tk.Button(self.button_frame, text="Estadísticas de Centros", command=self.show_center_stats)
         self.center_stats_button.grid(row=0, column=2, padx=5, pady=5)
+
+        self.center_stats_button = tk.Button(self.button_frame, text="Empezar rutas", command=self.start_route)
+        self.center_stats_button.grid(row=0, column=3, padx=5, pady=5)
 
         self.car_scale = 0.2
 
@@ -71,12 +81,12 @@ class Main:
 
         self.start_label = tk.Label(self.order_window, text="Nodo de Inicio")
         self.start_label.grid(row=0, column=0, padx=5)
-        self.start_node = ttk.Combobox(self.order_window, values=self.calle.ubicaciones, state="readonly")
+        self.start_node = ttk.Combobox(self.order_window, values=[cliente.nombre for cliente in self.calle.clientes], state="readonly")
         self.start_node.grid(row=0, column=1, padx=5)
 
         self.end_label = tk.Label(self.order_window, text="Nodo de Destino")
         self.end_label.grid(row=1, column=0, padx=5)
-        self.end_node = ttk.Combobox(self.order_window, values=self.calle.ubicaciones, state="readonly")
+        self.end_node = ttk.Combobox(self.order_window, values=[centro.nombre for centro in self.calle.centros], state="readonly")
         self.end_node.grid(row=1, column=1, padx=5)
 
         self.amount_label = tk.Label(self.order_window, text="Cantidad (10 a 100)")
@@ -84,8 +94,41 @@ class Main:
         self.amount_spinbox = tk.Spinbox(self.order_window, from_=0, to=100, validate="all", validatecommand=(self.root.register(self.validate_spinbox), '%P'))
         self.amount_spinbox.grid(row=2, column=1, padx=5)
 
-        self.button = tk.Button(self.order_window, text="Empezar Ruta", command=self.start_route)
-        self.button.grid(row=3, column=0, columnspan=2, pady=10)
+        self.tiempo_label = tk.Label(self.order_window, text="Tiempo de entrega (segundos):")
+        self.tiempo_label.grid(row=3, column=0, padx=5)
+        self.tiempo_entry = ttk.Entry(self.order_window)
+        self.tiempo_entry.grid(row=3, column=1, padx=5)
+
+        self.button = ttk.Button(self.order_window, text="Enlistar orden", command=lambda: self.list_orders())
+        self.button.grid(row=4, column=0, columnspan=2, pady=10)
+
+    def list_orders(self):
+        orden = [self.start_node.get(), self.end_node.get(), int(self.amount_spinbox.get()), int(self.tiempo_entry.get())]
+
+        tiempo_calculado = self.simular_viaje(orden[0], orden[1])
+        if tiempo_calculado < int(self.tiempo_entry.get()):
+            self.ordenes.append(orden)
+        else:
+            continuar = tk.Toplevel(self.root)
+            continuar.title("Atención")
+            mensaje = tk.Label(continuar, text=f"El tiempo de viaje estimado es {tiempo_calculado:.2f} segundos. ¿Desea hacer la orden de igual manera?")
+            mensaje.pack()
+            boton_si = ttk.Button(continuar, text="Sí", command=lambda: self.ordenes.append(orden))
+            boton_si.pack(side="left", padx=5)
+            boton_no = ttk.Button(continuar, text="No", command=lambda: [messagebox.showinfo('', 'La orden no se ha realizado'), continuar.destroy()])
+            boton_no.pack(side="left", padx=5)
+            continuar.focus_set()
+            continuar.grab_set()
+            self.root.wait_window(continuar)
+ 
+        self.order_window.destroy()
+
+    def simular_viaje(self, nodo1, nodo2):
+        distancia = nx.shortest_path_length(self.calle.calle, source=nodo1, target=nodo2)
+
+        tiempo_viaje = distancia / self.carro.get_carro().velocidad
+
+        return tiempo_viaje
 
     def show_center_stats(self):
         for item in self.calle.centros:
@@ -112,29 +155,47 @@ class Main:
         self.canvas.get_tk_widget().grid(row=2, column=0, columnspan=2, sticky="nsew")
 
     def start_route(self):
-        start = self.start_node.get()
-        end = self.end_node.get()
-        if start and end:
-            try:
-                self.path = nx.shortest_path(self.calle.calle, source=start, target=end)
-                if self.revisar_pesos():
-                    self.interpolated_positions = self.interpolate_positions(self.path)
-                    self.carro.get_carro().posicion_actual = self.interpolated_positions[0]
-                    self.animate_path()
-                else:
-                    messagebox.showinfo('Atención', "El puente no puede soportar el peso del vehículo. Buscando ruta alternativa...")
-                    alternative_path = self.find_alternative_route(start, end)
-                    if alternative_path:
-                        self.path = alternative_path
+        for item in self.ordenes:
+            start = item[0]
+            end = item[1]
+
+            inicio_tiempo = time.time()
+            if start and end:
+                try:
+                    self.path = nx.shortest_path(self.calle.calle, source=start, target=end)
+                    if self.revisar_pesos():
                         self.interpolated_positions = self.interpolate_positions(self.path)
                         self.carro.get_carro().posicion_actual = self.interpolated_positions[0]
                         self.animate_path()
                     else:
-                        messagebox.showinfo('Error', "No se encontró una ruta alternativa.")
-            except nx.NetworkXNoPath:
-                messagebox.showinfo('Error', "No existe una ruta entre los nodos seleccionados.")
-        else:
-            messagebox.showinfo('Error', "Seleccione nodos válidos.")
+                        messagebox.showinfo('Atención', "El puente no puede soportar el peso del vehículo. Buscando ruta alternativa...")
+                        alternative_path = self.find_alternative_route(start, end)
+                        if alternative_path:
+                            self.path = alternative_path
+                            self.interpolated_positions = self.interpolate_positions(self.path)
+                            self.carro.get_carro().posicion_actual = self.interpolated_positions[0]
+                            self.animate_path()
+                        else:
+                            messagebox.showinfo('Error', "No se encontró una ruta alternativa.")
+                except nx.NetworkXNoPath:
+                    messagebox.showinfo('Error', "No existe una ruta entre los nodos seleccionados.")
+            else:
+                messagebox.showinfo('Error', "Seleccione nodos válidos.")
+
+            self.tiempo_transcurrido = time.time() - inicio_tiempo  # Calcular el tiempo transcurrido
+
+            # Crear la ventana emergente para preguntar al usuario si desea continuar
+            continuar = tk.Toplevel(self.root)
+            continuar.title("Continuar?")
+            mensaje = tk.Label(continuar, text="¿Desea continuar con la siguiente orden?")
+            mensaje.pack()
+            boton_si = ttk.Button(continuar, text="Sí", command=continuar.destroy)
+            boton_si.pack(side="left", padx=5)
+            boton_no = ttk.Button(continuar, text="No", command=lambda: messagebox.showinfo('Información', 'Simulación finalizada.'))
+            boton_no.pack(side="left", padx=5)
+            continuar.focus_set()
+            continuar.grab_set()
+            self.root.wait_window(continuar)
 
     def revisar_pesos(self):
         for i in range(len(self.path) - 1):
@@ -220,7 +281,7 @@ class Main:
         stats += f"Velocidad: {self.carro.get_carro().velocidad}\n"
         stats += f"Escudo: {self.carro.get_carro().escudo}\n"
         stats += f"Ataque: {self.carro.get_carro().ataque}\n"
-        stats += f"Capacidad: {self.carro.get_carro().capacidad}\n"
+        stats += f"Dinero cargado: {self.carro.get_carro().capacidad}\n"
         
         self.carro_stats.config(state='normal')
         self.carro_stats.delete('1.0', tk.END)
