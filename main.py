@@ -10,7 +10,7 @@ import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.animation import FuncAnimation
-from app.model.calle_nueva import Calle  # Asegúrate de que esta ruta sea correcta
+from app.model.calle import Calle  # Asegúrate de que esta ruta sea correcta
 from app.model.carro import Carro
 
 class Main:
@@ -41,12 +41,18 @@ class Main:
         self.amount_spinbox = tk.Spinbox(self.input_frame, from_=0, to=100, validate="all", validatecommand=(self.root.register(self.validate_spinbox), '%P'))
         self.amount_spinbox.grid(row=0, column=3, padx=5)
 
+        # vea acá están las estadísticas del carro ese
+
+        self.stats_text = tk.Text(self.input_frame, width=40, height=10, state='disabled')
+        self.stats_text.grid(row=0, column=4, rowspan=3)
+
         self.figure, self.ax = plt.subplots()
         self.canvas = FigureCanvasTkAgg(self.figure, master=self.root)
         self.canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
-        self.carro = Carro('grande')
+        self.carro = Carro('pequeño')
         self.draw_graph()
+        self.update_car_stats()
 
         image_folder = os.path.join(os.path.dirname(__file__), 'images')
 
@@ -91,32 +97,30 @@ class Main:
                         self.interpolated_positions = self.interpolate_positions(self.path)
                         self.carro.get_carro().posicion_actual = self.interpolated_positions[0]
                         self.animate_path()
+                    else:
+                        messagebox.showinfo('Error', "No se encontró una ruta alternativa.")
             except nx.NetworkXNoPath:
-                print("No existe una ruta entre los nodos seleccionados.")
+                messagebox.showinfo('Error', "No existe una ruta entre los nodos seleccionados.")
         else:
-            print("Seleccione nodos válidos.")
+            messagebox.showinfo('Error', "Seleccione nodos válidos.")
 
     def revisar_pesos(self):
         for i in range(len(self.path) - 1):
             start = self.path[i]
             end = self.path[i + 1]
             edge_data = self.calle.calle.get_edge_data(start, end)
-            if 'peso' in edge_data:
+            if edge_data and 'peso' in edge_data:
                 peso_maximo = edge_data['peso']
-            else:
-                return True
-            if self.carro.get_carro().capacidad > peso_maximo:
-                return False
+                if self.carro.get_carro().peso > peso_maximo:
+                    return False
         return True
     
     def find_alternative_route(self, start, end):
         G = self.calle.calle.copy()
-        for i in range(len(self.path) - 1):
-            edge_start = self.path[i]
-            edge_end = self.path[i + 1]
-            max_weight = G.edges[edge_start, edge_end]['peso']
-            if self.carro.get_carro().capacidad > max_weight:
-                G.remove_edge(edge_start, edge_end)
+        
+        edges_to_remove = [(u, v) for u, v, data in G.edges(data=True) if data.get('peso', float('inf')) < self.carro.get_carro().peso]
+        G.remove_edges_from(edges_to_remove)
+        
         try:
             return nx.shortest_path(G, source=start, target=end)
         except nx.NetworkXNoPath:
@@ -178,6 +182,18 @@ class Main:
 
         self.canvas.draw()
 
+    def update_car_stats(self):
+        stats = f"Tipo de carro: {self.carro.tipo}\n"
+        stats += f"Peso: {self.carro.get_carro().peso}\n"
+        stats += f"Velocidad: {self.carro.get_carro().velocidad}\n"
+        stats += f"Escudo: {self.carro.get_carro().escudo}\n"
+        stats += f"Ataque: {self.carro.get_carro().ataque}\n"
+        stats += f"Capacidad: {self.carro.get_carro().capacidad}\n"
+        
+        self.stats_text.config(state='normal')
+        self.stats_text.delete('1.0', tk.END)
+        self.stats_text.insert(tk.END, stats)
+        self.stats_text.config(state='disabled')
 
     def run(self):
         self.root.geometry("1420x920")
