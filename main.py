@@ -1,4 +1,5 @@
 import matplotlib
+
 matplotlib.use('TkAgg')
 
 import tkinter as tk
@@ -13,6 +14,7 @@ from matplotlib.animation import FuncAnimation
 import time
 from app.model.calle import Calle  # Asegúrate de que esta ruta sea correcta
 from app.model.carro import Carro
+
 
 class Main:
     def __init__(self):
@@ -71,24 +73,27 @@ class Main:
             if 0 <= num <= 100:
                 return True
         return False
-    
+
     def show_order_form(self):
         self.order_window = tk.Toplevel(self.root)
         self.order_window.title("Formulario de Orden")
 
         self.start_label = tk.Label(self.order_window, text="Nodo de Inicio")
         self.start_label.grid(row=0, column=0, padx=5)
-        self.start_node = ttk.Combobox(self.order_window, values=[cliente.nombre for cliente in self.calle.clientes], state="readonly")
+        self.start_node = ttk.Combobox(self.order_window, values=[cliente.nombre for cliente in self.calle.clientes],
+                                       state="readonly")
         self.start_node.grid(row=0, column=1, padx=5)
 
         self.end_label = tk.Label(self.order_window, text="Nodo de Destino")
         self.end_label.grid(row=1, column=0, padx=5)
-        self.end_node = ttk.Combobox(self.order_window, values=[centro.nombre for centro in self.calle.centros], state="readonly")
+        self.end_node = ttk.Combobox(self.order_window, values=[centro.nombre for centro in self.calle.centros],
+                                     state="readonly")
         self.end_node.grid(row=1, column=1, padx=5)
 
         self.amount_label = tk.Label(self.order_window, text="Cantidad (10 a 100)")
         self.amount_label.grid(row=2, column=0, padx=5)
-        self.amount_spinbox = tk.Spinbox(self.order_window, from_=0, to=100, validate="all", validatecommand=(self.root.register(self.validate_spinbox), '%P'))
+        self.amount_spinbox = tk.Spinbox(self.order_window, from_=0, to=100, validate="all",
+                                         validatecommand=(self.root.register(self.validate_spinbox), '%P'))
         self.amount_spinbox.grid(row=2, column=1, padx=5)
 
         self.tiempo_label = tk.Label(self.order_window, text="Tiempo de entrega (segundos):")
@@ -96,7 +101,7 @@ class Main:
         self.tiempo_entry = ttk.Entry(self.order_window)
         self.tiempo_entry.grid(row=3, column=1, padx=5)
 
-        self.button = ttk.Button(self.order_window, text="Enlistar orden", command= self.validar_orden)
+        self.button = ttk.Button(self.order_window, text="Enlistar orden", command=self.validar_orden)
         self.button.grid(row=4, column=0, columnspan=2, pady=10)
 
     def validar_orden(self):
@@ -105,11 +110,12 @@ class Main:
         else:
             self.carro = Carro('grande')
 
-        orden = [self.start_node.get(), self.end_node.get(), int(self.amount_spinbox.get()), int(self.tiempo_entry.get()), self.carro]
+        orden = [self.start_node.get(), self.end_node.get(), int(self.amount_spinbox.get()),
+                 int(self.tiempo_entry.get()), self.carro]
         tiempo_calculado = self.simular_viaje(orden[0], orden[1])
         orden[3] = tiempo_calculado
 
-        cantidad = orden[2]*10**6
+        cantidad = orden[2] * 10 ** 6
 
         if self.validar_capacidad(cantidad, orden):
             if tiempo_calculado < int(self.tiempo_entry.get()):
@@ -119,30 +125,35 @@ class Main:
             else:
                 continuar = tk.Toplevel(self.root)
                 continuar.title("Atención")
-                mensaje = tk.Label(continuar, text=f"El tiempo de viaje estimado es {tiempo_calculado:.2f} segundos. ¿Desea hacer la orden de igual manera?")
+                mensaje = tk.Label(continuar,
+                                   text=f"El tiempo de viaje estimado es {tiempo_calculado:.2f} segundos. ¿Desea hacer la orden de igual manera?")
                 mensaje.pack()
-                boton_si = ttk.Button(continuar, text="Sí", command=lambda: [self.ordenes.append(orden), self.show_ordenes(), continuar.destroy(), self.show_center_stats()])
+                boton_si = ttk.Button(continuar, text="Sí",
+                                      command=lambda: [self.ordenes.append(orden), self.show_ordenes(),
+                                                       continuar.destroy(), self.show_center_stats()])
                 boton_si.pack(side="left", padx=5)
-                boton_no = ttk.Button(continuar, text="No", command=lambda: [messagebox.showinfo('', 'La orden no se ha realizado'), self.show_ordenes(), continuar.destroy()])
+                boton_no = ttk.Button(continuar, text="No",
+                                      command=lambda: [messagebox.showinfo('', 'La orden no se ha realizado'),
+                                                       self.show_ordenes(), continuar.destroy()])
                 boton_no.pack(side="left", padx=5)
                 continuar.focus_set()
                 continuar.grab_set()
                 self.root.wait_window(continuar)
-        
+
             self.order_window.destroy()
 
     def validar_capacidad(self, cantidad, orden):
         for centro in self.calle.centros:
             if centro.nombre == orden[1]:
                 if centro.capacidad_dinero < cantidad or centro.capacidad_escoltas < self.carro.get_carro().escoltas or centro.capacidad_vehiculos < 1:
-                    messagebox.showinfo('Capacidad del centro copada','Por favor, seleccione otro centro.')
+                    messagebox.showinfo('Capacidad del centro copada', 'Por favor, seleccione otro centro.')
                     return False
                 else:
                     centro.capacidad_dinero -= cantidad
                     centro.capacidad_escoltas -= self.carro.get_carro().escoltas
                     centro.capacidad_vehiculos -= 1
                     return True
-                
+
     def simular_viaje(self, nodo1, nodo2):
         distancia = nx.shortest_path_length(self.calle.calle, source=nodo1, target=nodo2)
 
@@ -170,10 +181,10 @@ class Main:
         self.ordenes_stats.delete('1.0', tk.END)  # Limpiar el widget antes de insertar nuevos datos
 
         for i in range(len(self.ordenes)):
-            stats = f"{i+1}.\n"
+            stats = f"{i + 1}.\n"
             stats += f"Nodo inicio: {self.ordenes[i][0]}\n"
             stats += f"Nodo fin: {self.ordenes[i][1]}\n"
-            stats += f"Cantidad de dinero: {self.ordenes[i][2] * 10**6}\n"
+            stats += f"Cantidad de dinero: {self.ordenes[i][2] * 10 ** 6}\n"
             stats += f"Tiempo estimado: {self.ordenes[i][3]:.2f} segundos\n"
             stats += f"Tipo de carro: {self.ordenes[i][4].tipo}\n"
             stats += "\n"
@@ -186,7 +197,8 @@ class Main:
         self.ax.clear()
         self.figure.set_size_inches(20, 8)
         self.pos = nx.spring_layout(self.calle.calle)
-        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500, edge_color=self.calle.edge_colors, ax=self.ax)
+        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500,
+                edge_color=self.calle.edge_colors, ax=self.ax)
         nx.draw_networkx_edge_labels(self.calle.calle, self.pos, edge_labels=self.calle.edge_labels)
         self.canvas.draw()
         self.canvas.get_tk_widget().grid(row=2, column=0, columnspan=2, sticky="nsew")
@@ -211,7 +223,8 @@ class Main:
                         carro.posicion_actual = self.interpolated_positions[0]
                         self.animate_path(carro)
                     else:
-                        messagebox.showinfo('Atención', "El puente no puede soportar el peso del vehículo. Buscando ruta alternativa...")
+                        messagebox.showinfo('Atención',
+                                            "El puente no puede soportar el peso del vehículo. Buscando ruta alternativa...")
                         alternative_path = self.find_alternative_route(start, end, carro)
                         if alternative_path:
                             self.path = alternative_path
@@ -234,7 +247,9 @@ class Main:
             mensaje.pack()
             boton_si = ttk.Button(continuar, text="Sí", command=continuar.destroy)
             boton_si.pack(side="left", padx=5)
-            boton_no = ttk.Button(continuar, text="No", command=lambda: [messagebox.showinfo('Información', 'Simulación finalizada.'), continuar.destroy()])
+            boton_no = ttk.Button(continuar, text="No",
+                                  command=lambda: [messagebox.showinfo('Información', 'Simulación finalizada.'),
+                                                   continuar.destroy()])
             boton_no.pack(side="left", padx=5)
             continuar.focus_set()
             continuar.grab_set()
@@ -250,13 +265,14 @@ class Main:
                 if carro.get_carro().peso > peso_maximo:
                     return False
         return True
-    
+
     def find_alternative_route(self, start, end, carro):
         G = self.calle.calle.copy()
-        
-        edges_to_remove = [(u, v) for u, v, data in G.edges(data=True) if data.get('peso', float('inf')) < carro.get_carro().peso]
+
+        edges_to_remove = [(u, v) for u, v, data in G.edges(data=True) if
+                           data.get('peso', float('inf')) < carro.get_carro().peso]
         G.remove_edges_from(edges_to_remove)
-        
+
         try:
             return nx.shortest_path(G, source=start, target=end)
         except nx.NetworkXNoPath:
@@ -281,22 +297,26 @@ class Main:
 
     def show_path(self, path):
         self.ax.clear()
-        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500, ax=self.ax)
+        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500,
+                ax=self.ax)
         path_edges = list(zip(path, path[1:]))
-        nx.draw_networkx_edges(self.calle.calle, self.pos, edgelist=path_edges, edge_color='green', width=2.0, ax=self.ax)
+        nx.draw_networkx_edges(self.calle.calle, self.pos, edgelist=path_edges, edge_color='green', width=2.0,
+                               ax=self.ax)
         self.canvas.draw()
 
     def update_animation(self, i):
         self.ax.clear()
-        
+
         # Dibuja el grafo con los colores originales de las aristas
-        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500, edge_color=self.calle.edge_colors, ax=self.ax)
-        nx.draw_networkx_edge_labels(self.calle.calle, self.pos, edge_labels = self.calle.edge_labels, ax=self.ax)
+        nx.draw(self.calle.calle, self.pos, with_labels=True, node_color=self.calle.node_colors, node_size=500,
+                edge_color=self.calle.edge_colors, ax=self.ax)
+        nx.draw_networkx_edge_labels(self.calle.calle, self.pos, edge_labels=self.calle.edge_labels, ax=self.ax)
 
         # Obtén las aristas del camino y colóralas en verde
         path_edges = list(zip(self.path, self.path[1:]))
-        nx.draw_networkx_edges(self.calle.calle, self.pos, edgelist=path_edges, edge_color='green', width=2.0, ax=self.ax)
-        
+        nx.draw_networkx_edges(self.calle.calle, self.pos, edgelist=path_edges, edge_color='green', width=2.0,
+                               ax=self.ax)
+
         self.ax.set_xlim(-1, 1)  # Establece límites de eje x
         self.ax.set_ylim(-1, 1)
 
@@ -310,11 +330,11 @@ class Main:
                 if carro_tipo in self.car_images:
                     image = self.car_images[carro_tipo]
                     self.ax.imshow(image, extent=[current_pos[0] - 0.5 * self.car_scale,
-                                                current_pos[0] + 0.5 * self.car_scale,
-                                                current_pos[1] - 0.5 * self.car_scale,
-                                                current_pos[1] + 0.5 * self.car_scale])
+                                                  current_pos[0] + 0.5 * self.car_scale,
+                                                  current_pos[1] - 0.5 * self.car_scale,
+                                                  current_pos[1] + 0.5 * self.car_scale])
                 else:
-                    messagebox.showwarning('Q HUBO GONORREA',"Imagen no encontrada para el tipo de carro:", carro_tipo)
+                    messagebox.showwarning('Q HUBO GONORREA', "Imagen no encontrada para el tipo de carro:", carro_tipo)
         self.canvas.draw()
 
     def update_car_stats(self, carro):
@@ -324,7 +344,7 @@ class Main:
         stats += f"Escudo: {carro.get_carro().escudo}\n"
         stats += f"Ataque: {carro.get_carro().ataque}\n"
         stats += f"Dinero cargado: {carro.get_carro().capacidad}\n"
-        
+
         self.carro_stats.config(state='normal')
         self.carro_stats.delete('1.0', tk.END)
         self.carro_stats.insert(tk.END, stats)
@@ -333,6 +353,7 @@ class Main:
     def run(self):
         self.root.geometry("1420x920")
         self.root.mainloop()
+
 
 if __name__ == "__main__":
     app = Main()

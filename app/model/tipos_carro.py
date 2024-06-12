@@ -17,6 +17,7 @@ class Grande:
     def actualizar_posicion(self, nueva_posicion):
         self.posicion_actual = nueva_posicion
 
+
 class Pequeño:
     def __init__(self, contenedor):
         self.velocidad = 2
@@ -36,6 +37,7 @@ class Pequeño:
     def actualizar_posicion(self, nueva_posicion):
         self.posicion_actual = nueva_posicion
 
+
 class Escolta:
     def __init__(self):
         self.escudo = 5
@@ -43,6 +45,7 @@ class Escolta:
 
     def actualizar_posicion(self, nueva_posicion):
         self.posicion_actual = nueva_posicion
+
 
 class Ladron:
     def __init__(self):
@@ -54,12 +57,12 @@ class Ladron:
 
     def get_escudo(self):
         return self.escudo
-    
+
     def set_escudo(self, escudo):
         self.escudo = escudo
 
     def get_ataque(self):
         return self.ataque
-    
+
     def set_ataque(self, ataque):
         self.ataque = ataque
