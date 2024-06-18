@@ -12,13 +12,13 @@ class Carro:
             self.carro = Pequeño(2)
         elif self.tipo == 'escolta':
             self.carro = Escolta()
-        else:
+        elif self.tipo == 'ladron':  # Agregamos esta condición para Ladron
             self.carro = Ladron()
+        else:
+            raise ValueError(f"Tipo de carro desconocido: {tipo}")
 
     def get_carro(self):
         return self.carro
 
     def set_carro(self, carro):
         self.carro = carro
-
-
