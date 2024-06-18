@@ -23,10 +23,8 @@ class Main:
         self.root.grid_rowconfigure(1, weight=1)
         self.root.grid_columnconfigure(0, weight=3)
         self.root.grid_columnconfigure(1, weight=1)
-
+        self.ask_ladrones_data()
         self.calle = Calle()
-
-        # la lista de rutas que van a tener los carros
 
         self.ordenes = []
 
@@ -68,6 +66,53 @@ class Main:
         self.img_escoltas = mpimg.imread(self.imagen_escoltas_path)
 
         self.show_center_stats()
+
+    def ask_ladrones_data(self):
+        self.ladrones_window = tk.Toplevel(self.root)
+        self.ladrones_window.title("Datos de Ladrones")
+
+        # Configuración de Spinbox para escudo y ataque
+        self.escudo_label = tk.Label(self.ladrones_window, text="Escudo:")
+        self.escudo_label.grid(row=0, column=0, padx=5, pady=5)
+        self.escudo_spinbox = tk.Spinbox(self.ladrones_window, from_=0, to=100)
+        self.escudo_spinbox.grid(row=0, column=1, padx=5, pady=5)
+
+        self.ataque_label = tk.Label(self.ladrones_window, text="Ataque:")
+        self.ataque_label.grid(row=1, column=0, padx=5, pady=5)
+        self.ataque_spinbox = tk.Spinbox(self.ladrones_window, from_=0, to=100)
+        self.ataque_spinbox.grid(row=1, column=1, padx=5, pady=5)
+
+        self.save_button = ttk.Button(self.ladrones_window, text="Aceptar", command=self.save_ladrones_data)
+        self.save_button.grid(row=2, column=0, columnspan=2, pady=10)
+
+        # Hacer que la ventana de ladrones esté siempre en primer plano
+        self.ladrones_window.lift()
+
+        # Permitir que la ventana sea redimensionable y movible
+        self.ladrones_window.resizable(True, True)
+        self.ladrones_window.grab_set()
+
+    def save_ladrones_data(self):
+        escudo_str = self.escudo_spinbox.get()
+        ataque_str = self.ataque_spinbox.get()
+
+        # Validar que los campos no estén vacíos y que sean diferentes de cero
+        if escudo_str == "" or ataque_str == "" or escudo_str == "0" or ataque_str == "0":
+            messagebox.showerror("Error", "Por favor, complete todos los campos con valores mayores a cero.")
+            return
+
+        try:
+            escudo = int(escudo_str)
+            ataque = int(ataque_str)
+
+            self.ladron = Carro('ladron').get_carro()
+            self.ladron.set_escudo(escudo)
+            self.ladron.set_ataque(ataque)
+            print(self.ladron.get_escudo())
+            print(self.ladron.get_ataque())
+            self.ladrones_window.destroy()
+        except ValueError as e:
+            messagebox.showerror("Error", str(e))
 
     def validate_spinbox(self, value):
         if value.isdigit():
@@ -361,7 +406,9 @@ class Main:
         self.carro_stats.config(state='disabled')
 
     def run(self):
+
         self.root.geometry("1420x920")
+
         self.root.mainloop()
 
 
