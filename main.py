@@ -25,7 +25,7 @@ class Main:
         self.root.grid_columnconfigure(1, weight=1)
         self.ask_ladrones_data()
         self.calle = Calle()
-
+        self.reverse_ruta = None
         self.ordenes = []
 
         self.tiempo_transcurrido = 0
@@ -61,6 +61,7 @@ class Main:
         self.car_images = {
             'grande': mpimg.imread(os.path.join(image_folder, 'cGran.png')),
             'pequeño': mpimg.imread(os.path.join(image_folder, 'cPeque.png')),
+            'ladrones': mpimg.imread(os.path.join(image_folder, 'lola.png'))
         }
         self.imagen_escoltas_path = os.path.join(os.path.join(image_folder, 'escoltas.png'))
         self.img_escoltas = mpimg.imread(self.imagen_escoltas_path)
@@ -92,6 +93,11 @@ class Main:
         self.ladrones_window.resizable(True, True)
         self.ladrones_window.grab_set()
 
+    def get_orden_con_mayor_dinero(self):
+        if not self.ordenes:
+            return None
+        return max(self.ordenes, key=lambda orden: orden[2])
+
     def save_ladrones_data(self):
         escudo_str = self.escudo_spinbox.get()
         ataque_str = self.ataque_spinbox.get()
@@ -102,8 +108,8 @@ class Main:
             return
 
         try:
-            escudo = int(escudo_str)
-            ataque = int(ataque_str)
+            escudo = int(escudo_str)*3
+            ataque = int(ataque_str)*3
 
             self.ladron = Carro('ladron').get_carro()
             self.ladron.set_escudo(escudo)
@@ -251,15 +257,19 @@ class Main:
         self.canvas.get_tk_widget().grid(row=2, column=0, columnspan=2, sticky="nsew")
 
     def start_route(self):
+        orden_con_mayor_dinero = self.get_orden_con_mayor_dinero()  # Obtén la orden con mayor dinero
+
         for item in self.ordenes:
             start = item[0]
             end = item[1]
 
             carro = item[4]
-
             self.ruta = item[4]
-
             self.update_car_stats(carro)
+
+            if item == orden_con_mayor_dinero:  # Si es la orden con mayor dinero, configura el segundo vehículo
+                self.reverse_ruta = Carro('ladron')
+                self.reverse_ruta.posicion_actual = self.pos[end]
 
             inicio_tiempo = time.time()
             if start and end:
@@ -385,11 +395,21 @@ class Main:
                     img_escoltas_position = (current_pos[0] + 0.2, current_pos[1] + 0.1)
                     img_escoltas_scale = self.car_scale * 0.5
                     self.ax.imshow(self.img_escoltas, extent=[img_escoltas_position[0] - 0.5 * img_escoltas_scale,
-                                                      img_escoltas_position[0] + 0.5 * img_escoltas_scale,
-                                                      img_escoltas_position[1] - 0.5 * img_escoltas_scale,
-                                                      img_escoltas_position[1] + 0.5 * img_escoltas_scale])
+                                                              img_escoltas_position[0] + 0.5 * img_escoltas_scale,
+                                                              img_escoltas_position[1] - 0.5 * img_escoltas_scale,
+                                                              img_escoltas_position[1] + 0.5 * img_escoltas_scale])
                 else:
                     messagebox.showwarning('Q HUBO GONORREA', "Imagen no encontrada para el tipo de carro:", carro_tipo)
+
+            if self.reverse_ruta and pos_index < len(self.interpolated_positions):  # Animar el segundo vehículo
+                reverse_pos_index = len(self.interpolated_positions) - pos_index - 1
+                self.reverse_ruta.get_carro().actualizar_posicion(self.interpolated_positions[reverse_pos_index])
+                reverse_pos = self.reverse_ruta.get_carro().posicion_actual
+                reverse_image = self.car_images['ladrones']  # Puedes cambiar el tipo de carro según tus necesidades
+                self.ax.imshow(reverse_image, extent=[reverse_pos[0] - 0.5 * self.car_scale,
+                                                      reverse_pos[0] + 0.5 * self.car_scale,
+                                                      reverse_pos[1] - 0.5 * self.car_scale,
+                                                      reverse_pos[1] + 0.5 * self.car_scale])
         self.canvas.draw()
 
     def update_car_stats(self, carro):
