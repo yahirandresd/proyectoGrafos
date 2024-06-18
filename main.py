@@ -400,7 +400,7 @@ class Main:
                                                               img_escoltas_position[1] + 0.5 * img_escoltas_scale])
                 else:
                     messagebox.showwarning('Q HUBO GONORREA', "Imagen no encontrada para el tipo de carro:", carro_tipo)
-
+            
             if self.reverse_ruta and pos_index < len(self.interpolated_positions):  # Animar el segundo vehículo
                 reverse_pos_index = len(self.interpolated_positions) - pos_index - 1
                 self.reverse_ruta.get_carro().actualizar_posicion(self.interpolated_positions[reverse_pos_index])
@@ -410,6 +410,8 @@ class Main:
                                                       reverse_pos[0] + 0.5 * self.car_scale,
                                                       reverse_pos[1] - 0.5 * self.car_scale,
                                                       reverse_pos[1] + 0.5 * self.car_scale])
+                if pos_index == len(self.interpolated_positions) // 2:
+                    messagebox.showinfo('Alerta de Intento de Atraco', 'Se ha librado un intento de atraco.')
         self.canvas.draw()
 
     def update_car_stats(self, carro):
