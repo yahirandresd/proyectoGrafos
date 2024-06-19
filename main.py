@@ -1,7 +1,5 @@
 import matplotlib
-
 matplotlib.use('TkAgg')
-
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -15,7 +13,6 @@ import time
 from app.model.calle import Calle  # Asegúrate de que esta ruta sea correcta
 from app.model.carro import Carro
 from app.model.atraco import intento_atraco
-
 
 class Main:
     def __init__(self):
@@ -109,8 +106,8 @@ class Main:
             return
 
         try:
-            escudo = int(escudo_str)*3
-            ataque = int(ataque_str)*3
+            escudo = int(escudo_str) * 3
+            ataque = int(ataque_str) * 3
 
             self.ladron = Carro('ladron').get_carro()
             self.ladron.set_escudo(escudo)
@@ -135,7 +132,7 @@ class Main:
         self.start_label = tk.Label(self.order_window, text="Nodo de Inicio")
         self.start_label.grid(row=0, column=0, padx=5)
         self.start_node = ttk.Combobox(self.order_window, values=[cliente.nombre for cliente in self.calle.clientes],
-                                    state="readonly")
+                                       state="readonly")
         self.start_node.grid(row=0, column=1, padx=5)
         self.start_node.bind("<<ComboboxSelected>>", self.update_container_combobox)
 
@@ -159,7 +156,8 @@ class Main:
         self.amount_label = tk.Label(self.order_window, text="Cantidad")
         self.amount_label.grid(row=3, column=0, padx=5)
         self.amount_spinbox = ttk.Spinbox(self.order_window, from_=0, to=100, validate="all",
-                                        validatecommand=(self.root.register(self.validate_spinbox), '%P'), state="readonly")
+                                          validatecommand=(self.root.register(self.validate_spinbox), '%P'),
+                                          state="readonly")
         self.amount_spinbox.grid(row=3, column=1, padx=5)
 
         self.tiempo_label = tk.Label(self.order_window, text="Tiempo de entrega (segundos):")
@@ -218,8 +216,8 @@ class Main:
         for cliente in self.calle.clientes:
             if cliente.nombre == self.start_node.get():
                 cliente.eliminar_contenedor(self.container.get())
-            
-        self.carro.get_carro().capacidad = int(self.amount_spinbox.get()) * 10**6    
+
+        self.carro.get_carro().capacidad = int(self.amount_spinbox.get()) * 10 ** 6
 
         orden = [self.start_node.get(), self.end_node.get(), int(self.amount_spinbox.get()),
                  float(self.tiempo_entry.get()), self.carro]
@@ -239,20 +237,19 @@ class Main:
                     continuar = tk.Toplevel(self.root)
                     continuar.title("Atención")
                     mensaje = tk.Label(continuar,
-                                    text=f"El tiempo de viaje estimado es {tiempo_calculado:.2f} segundos. ¿Desea hacer la orden de igual manera?")
+                                       text=f"El tiempo de viaje estimado es {tiempo_calculado:.2f} segundos. ¿Desea hacer la orden de igual manera?")
                     mensaje.pack()
                     boton_si = ttk.Button(continuar, text="Sí",
-                                        command=lambda: [self.ordenes.append(orden), self.show_ordenes(),
-                                                        continuar.destroy(), self.show_center_stats()])
+                                          command=lambda: [self.ordenes.append(orden), self.show_ordenes(),
+                                                           continuar.destroy(), self.show_center_stats()])
                     boton_si.pack(side="left", padx=5)
                     boton_no = ttk.Button(continuar, text="No",
-                                        command=lambda: [messagebox.showinfo('', 'La orden no se ha realizado'),
-                                                        self.show_ordenes(), continuar.destroy()])
+                                          command=lambda: [messagebox.showinfo('', 'La orden no se ha realizado'),
+                                                           self.show_ordenes(), continuar.destroy()])
                     boton_no.pack(side="left", padx=5)
                     continuar.focus_set()
                     continuar.grab_set()
                     self.root.wait_window(continuar)
-
 
             if any(cliente.nombre == orden[1] for cliente in self.calle.clientes):
                 if tiempo_calculado <= float(self.tiempo_entry.get()):
@@ -262,15 +259,15 @@ class Main:
                     continuar = tk.Toplevel(self.root)
                     continuar.title("Atención")
                     mensaje = tk.Label(continuar,
-                                    text=f"El tiempo de viaje estimado es {tiempo_calculado:.2f} segundos. ¿Desea hacer la orden de igual manera?")
+                                       text=f"El tiempo de viaje estimado es {tiempo_calculado:.2f} segundos. ¿Desea hacer la orden de igual manera?")
                     mensaje.pack()
                     boton_si = ttk.Button(continuar, text="Sí",
-                                        command=lambda: [self.ordenes.append(orden), self.show_ordenes(),
-                                                        continuar.destroy()])
+                                          command=lambda: [self.ordenes.append(orden), self.show_ordenes(),
+                                                           continuar.destroy()])
                     boton_si.pack(side="left", padx=5)
                     boton_no = ttk.Button(continuar, text="No",
-                                        command=lambda: [messagebox.showinfo('', 'La orden no se ha realizado'),
-                                                        self.show_ordenes(), continuar.destroy()])
+                                          command=lambda: [messagebox.showinfo('', 'La orden no se ha realizado'),
+                                                           self.show_ordenes(), continuar.destroy()])
                     boton_no.pack(side="left", padx=5)
                     continuar.focus_set()
                     continuar.grab_set()
@@ -279,7 +276,7 @@ class Main:
             self.order_window.destroy()
 
     def validar_capacidad(self, cantidad, orden):
-        for centro in self.calle.centros: #si es entre cliente y centro
+        for centro in self.calle.centros:  # si es entre cliente y centro
             if centro.nombre == orden[1]:
                 if centro.capacidad_dinero < cantidad or centro.capacidad_escoltas < self.carro.get_carro().escoltas or centro.capacidad_vehiculos < 1:
                     messagebox.showinfo('Atención', 'Capacidad del centro copada. Por favor, seleccione otro centro.')
@@ -288,8 +285,8 @@ class Main:
                 centro.capacidad_escoltas -= self.carro.get_carro().escoltas
                 centro.capacidad_vehiculos -= 1
                 return True
-                
-        for cliente in self.calle.clientes: #si es entre clientes
+
+        for cliente in self.calle.clientes:  # si es entre clientes
             if cliente.nombre == orden[1]:
                 if cliente.capacidad_dinero < cantidad:
                     messagebox.showinfo('Atención', 'Capacidad del cliente copada. Por favor, seleccione otro cliente.')
@@ -365,9 +362,13 @@ class Main:
             self.ruta = item[4]
             self.update_car_stats(carro)
 
-            if item == orden_con_mayor_dinero:  # Si es la orden con mayor dinero, configura el segundo vehículo
+            print(f"item: {item}")
+            print(f"orden con ma: {orden_con_mayor_dinero}")
+            if item[2] == orden_con_mayor_dinero[2]:  # Solo inicializar si el ladrón no ha aparecido
+
                 self.reverse_ruta = Carro('ladron')
                 self.reverse_ruta.posicion_actual = self.pos[end]
+                self.animar_atraco = True
 
             if start and end:
                 try:
@@ -482,8 +483,8 @@ class Main:
                 carro_tipo = self.ruta.tipo
 
                 if carro_tipo in self.car_images:
-                    image = self.car_images[carro_tipo]
-                    self.ax.imshow(image, extent=[current_pos[0] - 0.5 * self.car_scale,
+                    self.image = self.car_images[carro_tipo]
+                    self.ax.imshow(self.image, extent=[current_pos[0] - 0.5 * self.car_scale,
                                                   current_pos[0] + 0.5 * self.car_scale,
                                                   current_pos[1] - 0.5 * self.car_scale,
                                                   current_pos[1] + 0.5 * self.car_scale])
@@ -495,24 +496,27 @@ class Main:
                                                               img_escoltas_position[1] + 0.5 * img_escoltas_scale])
                 else:
                     messagebox.showwarning('Q HUBO GONORREA', "Imagen no encontrada para el tipo de carro:", carro_tipo)
-            
-            if self.reverse_ruta and pos_index < len(self.interpolated_positions):  # Animar el segundo vehículo
-                reverse_pos_index = len(self.interpolated_positions) - pos_index - 1
-                self.reverse_ruta.get_carro().actualizar_posicion(self.interpolated_positions[reverse_pos_index])
-                reverse_pos = self.reverse_ruta.get_carro().posicion_actual
-                reverse_image = self.car_images['ladrones']  # Puedes cambiar el tipo de carro según tus necesidades
-                self.ax.imshow(reverse_image, extent=[reverse_pos[0] - 0.5 * self.car_scale,
-                                                      reverse_pos[0] + 0.5 * self.car_scale,
-                                                      reverse_pos[1] - 0.5 * self.car_scale,
-                                                      reverse_pos[1] + 0.5 * self.car_scale])
-                if pos_index == len(self.interpolated_positions) // 2:
-                    resultado = intento_atraco(
-                        self.ladron.get_escudo(), self.ladron.get_ataque(),
-                        5, 5,
-                        self.carro.get_carro().escudo, self.carro.get_carro().ataque
-                    )
-                    messagebox.showinfo('Alerta de Intento de Atraco', 'Se ha librado un intento de atraco.')
-                    messagebox.showinfo('Resultado Atraco', resultado)
+
+            if self.animar_atraco == True:
+                if self.reverse_ruta and pos_index < len(self.interpolated_positions):  # Animar el segundo vehículo
+                    reverse_pos_index = len(self.interpolated_positions) - pos_index - 1
+                    self.reverse_ruta.get_carro().actualizar_posicion(self.interpolated_positions[reverse_pos_index])
+                    reverse_pos = self.reverse_ruta.get_carro().posicion_actual
+                    reverse_image = self.car_images['ladrones']  # Puedes cambiar el tipo de carro según tus necesidades
+                    self.ax.imshow(reverse_image, extent=[reverse_pos[0] - 0.5 * self.car_scale,
+                                                            reverse_pos[0] + 0.5 * self.car_scale,
+                                                            reverse_pos[1] - 0.5 * self.car_scale,
+                                                            reverse_pos[1] + 0.5 * self.car_scale])
+                    if pos_index == len(self.interpolated_positions) // 2:
+                        resultado = intento_atraco(
+                            self.ladron.get_escudo(), self.ladron.get_ataque(),
+                                5, 5,
+                            self.carro.get_carro().escudo, self.carro.get_carro().ataque
+                        )
+                        messagebox.showinfo('Alerta de Intento de Atraco', 'Se ha librado un intento de atraco.')
+                        messagebox.showinfo('Resultado Atraco', resultado)
+
+                        self.animar_atraco = False
         self.canvas.draw()
 
     def update_car_stats(self, carro):
@@ -533,7 +537,6 @@ class Main:
         self.root.geometry("1420x920")
 
         self.root.mainloop()
-
 
 if __name__ == "__main__":
     app = Main()
