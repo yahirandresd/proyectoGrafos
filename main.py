@@ -14,6 +14,7 @@ from matplotlib.animation import FuncAnimation
 import time
 from app.model.calle import Calle  # Asegúrate de que esta ruta sea correcta
 from app.model.carro import Carro
+from app.model.atraco import intento_atraco
 
 
 class Main:
@@ -134,34 +135,91 @@ class Main:
         self.start_label = tk.Label(self.order_window, text="Nodo de Inicio")
         self.start_label.grid(row=0, column=0, padx=5)
         self.start_node = ttk.Combobox(self.order_window, values=[cliente.nombre for cliente in self.calle.clientes],
-                                       state="readonly")
+                                    state="readonly")
         self.start_node.grid(row=0, column=1, padx=5)
+        self.start_node.bind("<<ComboboxSelected>>", self.update_container_combobox)
 
         self.end_label = tk.Label(self.order_window, text="Nodo de Destino")
         self.end_label.grid(row=1, column=0, padx=5)
-        self.end_node = ttk.Combobox(self.order_window, values=[centro.nombre for centro in self.calle.centros],
-                                     state="readonly")
+
+        nodos = []
+        for i in range(len(self.calle.centros)):
+            nodos.append(self.calle.centros[i].nombre)
+            nodos.append(self.calle.clientes[i].nombre)
+
+        self.end_node = ttk.Combobox(self.order_window, values=nodos, state="readonly")
         self.end_node.grid(row=1, column=1, padx=5)
 
-        self.amount_label = tk.Label(self.order_window, text="Cantidad (10 a 100)")
-        self.amount_label.grid(row=2, column=0, padx=5)
-        self.amount_spinbox = tk.Spinbox(self.order_window, from_=0, to=100, validate="all",
-                                         validatecommand=(self.root.register(self.validate_spinbox), '%P'))
-        self.amount_spinbox.grid(row=2, column=1, padx=5)
+        self.container_label = tk.Label(self.order_window, text="Contenedor")
+        self.container_label.grid(row=2, column=0, padx=5)
+        self.container = ttk.Combobox(self.order_window, values=[], state="disabled")
+        self.container.grid(row=2, column=1, padx=5)
+        self.container.bind("<<ComboboxSelected>>", self.update_amount_spinbox)  # Bind the event
+
+        self.amount_label = tk.Label(self.order_window, text="Cantidad")
+        self.amount_label.grid(row=3, column=0, padx=5)
+        self.amount_spinbox = ttk.Spinbox(self.order_window, from_=0, to=100, validate="all",
+                                        validatecommand=(self.root.register(self.validate_spinbox), '%P'), state="readonly")
+        self.amount_spinbox.grid(row=3, column=1, padx=5)
 
         self.tiempo_label = tk.Label(self.order_window, text="Tiempo de entrega (segundos):")
-        self.tiempo_label.grid(row=3, column=0, padx=5)
+        self.tiempo_label.grid(row=4, column=0, padx=5)
         self.tiempo_entry = ttk.Entry(self.order_window)
-        self.tiempo_entry.grid(row=3, column=1, padx=5)
+        self.tiempo_entry.grid(row=4, column=1, padx=5)
 
         self.button = ttk.Button(self.order_window, text="Enlistar orden", command=self.validar_orden)
-        self.button.grid(row=4, column=0, columnspan=2, pady=10)
+        self.button.grid(row=5, column=0, columnspan=2, pady=10)
+
+    def update_container_combobox(self, event):
+        selected_start_node = self.start_node.get()
+        self.container.config(state='readonly')
+
+        if selected_start_node:
+            cliente = None
+            for item in self.calle.clientes:
+                if selected_start_node == item.nombre:
+                    cliente = item
+                    break
+            if cliente:
+                self.container['values'] = [contenedor.tipo for contenedor in cliente.contenedores]
+            else:
+                self.container['values'] = []
+        else:
+            self.container['values'] = []
+
+    def update_amount_spinbox(self, event):
+        self.amount_spinbox.config(state='normal')
+        selected_container = self.container.get()
+
+        if selected_container == 'pequeño':
+            self.amount_label.config(text='Cantidad (entre 1 y 20)')
+            self.amount_spinbox.config(from_=1, to=20)
+        elif selected_container == 'mediano':
+            self.amount_label.config(text='Cantidad (entre 21 y 50)')
+            self.amount_spinbox.config(from_=21, to=50)
+        elif selected_container == 'grande':
+            self.amount_label.config(text='Cantidad (entre 51 y 100)')
+            self.amount_spinbox.config(from_=51, to=100)
+        else:
+            self.amount_spinbox.config(from_=0, to=100)
+        self.amount_spinbox.delete(0, 'end')
 
     def validar_orden(self):
-        if int(self.amount_spinbox.get()) < 50:
+        if int(self.amount_spinbox.get()) <= 50:
             self.carro = Carro('pequeño')
+            if self.container.get() == 'mediano':
+                self.carro.get_carro().peso = 2
+            elif self.container.get() == 'pequeño':
+                self.carro.get_carro().peso = 1
         else:
             self.carro = Carro('grande')
+            self.carro.get_carro().peso = 3
+
+        for cliente in self.calle.clientes:
+            if cliente.nombre == self.start_node.get():
+                cliente.eliminar_contenedor(self.container.get())
+            
+        self.carro.get_carro().capacidad = int(self.amount_spinbox.get()) * 10**6    
 
         orden = [self.start_node.get(), self.end_node.get(), int(self.amount_spinbox.get()),
                  float(self.tiempo_entry.get()), self.carro]
@@ -258,8 +316,13 @@ class Main:
 
     def start_route(self):
         orden_con_mayor_dinero = self.get_orden_con_mayor_dinero()  # Obtén la orden con mayor dinero
+        self.continuar_sim = True
 
         for item in self.ordenes:
+            if self.continuar_sim == False:
+                print(self.continuar_sim)
+                break
+            print(self.continuar_sim)
             start = item[0]
             end = item[1]
 
@@ -271,7 +334,6 @@ class Main:
                 self.reverse_ruta = Carro('ladron')
                 self.reverse_ruta.posicion_actual = self.pos[end]
 
-            inicio_tiempo = time.time()
             if start and end:
                 try:
                     self.path = nx.shortest_path(self.calle.calle, source=start, target=end)
@@ -295,8 +357,6 @@ class Main:
             else:
                 messagebox.showinfo('Error', "Seleccione nodos válidos.")
 
-            self.tiempo_transcurrido = time.time() - inicio_tiempo  # Calcular el tiempo transcurrido
-
             # Crear la ventana emergente para preguntar al usuario si desea continuar
             continuar = tk.Toplevel(self.root)
             continuar.title("Continuar?")
@@ -306,7 +366,7 @@ class Main:
             boton_si.pack(side="left", padx=5)
             boton_no = ttk.Button(continuar, text="No",
                                   command=lambda: [messagebox.showinfo('Información', 'Simulación finalizada.'),
-                                                   continuar.destroy()])
+                                                   setattr(self, 'continuar_sim', False), continuar.destroy()])
             boton_no.pack(side="left", padx=5)
             continuar.focus_set()
             continuar.grab_set()
@@ -411,7 +471,13 @@ class Main:
                                                       reverse_pos[1] - 0.5 * self.car_scale,
                                                       reverse_pos[1] + 0.5 * self.car_scale])
                 if pos_index == len(self.interpolated_positions) // 2:
+                    resultado = intento_atraco(
+                        self.ladron.get_escudo(), self.ladron.get_ataque(),
+                        5, 5,
+                        self.carro.get_carro().escudo, self.carro.get_carro().ataque
+                    )
                     messagebox.showinfo('Alerta de Intento de Atraco', 'Se ha librado un intento de atraco.')
+                    messagebox.showinfo('Resultado Atraco', resultado)
         self.canvas.draw()
 
     def update_car_stats(self, carro):
