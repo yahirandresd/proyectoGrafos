@@ -12,7 +12,7 @@ class Carro:
             self.carro = Pequeño(2)
         elif self.tipo == 'escolta':
             self.carro = Escolta()
-        elif self.tipo == 'ladron':  # Agregamos esta condición para Ladron
+        elif self.tipo == 'ladron':
             self.carro = Ladron()
         else:
             raise ValueError(f"Tipo de carro desconocido: {tipo}")
