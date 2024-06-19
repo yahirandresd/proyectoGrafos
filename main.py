@@ -68,7 +68,6 @@ class Main:
         self.img_escoltas = mpimg.imread(self.imagen_escoltas_path)
 
         self.show_center_stats()
-        self.show_client_stats()
 
     def ask_ladrones_data(self):
         self.ladrones_window = tk.Toplevel(self.root)
@@ -258,7 +257,6 @@ class Main:
             if any(cliente.nombre == orden[1] for cliente in self.calle.clientes):
                 if tiempo_calculado <= float(self.tiempo_entry.get()):
                     self.ordenes.append(orden)
-                    self.show_client_stats()
                     self.show_ordenes()
                 else:
                     continuar = tk.Toplevel(self.root)
@@ -268,7 +266,7 @@ class Main:
                     mensaje.pack()
                     boton_si = ttk.Button(continuar, text="Sí",
                                         command=lambda: [self.ordenes.append(orden), self.show_ordenes(),
-                                                        continuar.destroy(), self.show_client_stats()])
+                                                        continuar.destroy()])
                     boton_si.pack(side="left", padx=5)
                     boton_no = ttk.Button(continuar, text="No",
                                         command=lambda: [messagebox.showinfo('', 'La orden no se ha realizado'),
@@ -323,22 +321,6 @@ class Main:
             self.centro_stats.insert(tk.END, stats)
 
         self.centro_stats.config(state='disabled')
-
-    def show_client_stats(self):
-        if hasattr(self, 'ventana_estadisticas') and self.ventana_estadisticas:
-            self.ventana_estadisticas.destroy()
-        self.ventana_estadisticas = tk.Toplevel(self.root)
-        self.ventana_estadisticas.title("Estadísticas de Cliente")
-
-        for cliente in self.calle.clientes:
-            lbl_nombre = tk.Label(self.ventana_estadisticas, text=f"Nombre: {cliente.nombre}")
-            lbl_nombre.pack()
-            lbl_contenedores = tk.Label(self.ventana_estadisticas, text=f"Contenedores: {' '.join(contenedor.tipo for contenedor in cliente.contenedores)}")
-            lbl_contenedores.pack()
-            lbl_capacidad = tk.Label(self.ventana_estadisticas, text=f"Capacidad de dinero: {cliente.capacidad_dinero}")
-            lbl_capacidad.pack()
-
-        self.ventana_estadisticas.mainloop()
 
     def show_ordenes(self):
         self.ordenes_stats.config(state='normal')
