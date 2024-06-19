@@ -5,6 +5,7 @@ class Cliente:
     def __init__(self, nombre=None):
         self.nombre = nombre if nombre else self.asignar_nombre()
         self.contenedores = [Contenedor(random.randint(1,3)), Contenedor(random.randint(1,3))]
+        self.capacidad_dinero = random.randint(100000000,200000000)
 
     def asignar_nombre(self):
         nombres = [
