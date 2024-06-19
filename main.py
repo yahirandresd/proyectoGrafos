@@ -68,6 +68,7 @@ class Main:
         self.img_escoltas = mpimg.imread(self.imagen_escoltas_path)
 
         self.show_center_stats()
+        self.show_client_stats()
 
     def ask_ladrones_data(self):
         self.ladrones_window = tk.Toplevel(self.root)
@@ -224,46 +225,82 @@ class Main:
         orden = [self.start_node.get(), self.end_node.get(), int(self.amount_spinbox.get()),
                  float(self.tiempo_entry.get()), self.carro]
         tiempo_calculado = self.simular_viaje(orden[0], orden[1])
+
         orden[3] = tiempo_calculado
 
         cantidad = orden[2] * 10 ** 6
 
         if self.validar_capacidad(cantidad, orden):
-            if tiempo_calculado <= float(self.tiempo_entry.get()):
-                self.ordenes.append(orden)
-                self.show_center_stats()
-                self.show_ordenes()
-            else:
-                continuar = tk.Toplevel(self.root)
-                continuar.title("Atención")
-                mensaje = tk.Label(continuar,
-                                   text=f"El tiempo de viaje estimado es {tiempo_calculado:.2f} segundos. ¿Desea hacer la orden de igual manera?")
-                mensaje.pack()
-                boton_si = ttk.Button(continuar, text="Sí",
-                                      command=lambda: [self.ordenes.append(orden), self.show_ordenes(),
-                                                       continuar.destroy(), self.show_center_stats()])
-                boton_si.pack(side="left", padx=5)
-                boton_no = ttk.Button(continuar, text="No",
-                                      command=lambda: [messagebox.showinfo('', 'La orden no se ha realizado'),
-                                                       self.show_ordenes(), continuar.destroy()])
-                boton_no.pack(side="left", padx=5)
-                continuar.focus_set()
-                continuar.grab_set()
-                self.root.wait_window(continuar)
+            if any(centro.nombre == orden[1] for centro in self.calle.centros):
+                if tiempo_calculado <= float(self.tiempo_entry.get()):
+                    self.ordenes.append(orden)
+                    self.show_center_stats()
+                    self.show_ordenes()
+                else:
+                    continuar = tk.Toplevel(self.root)
+                    continuar.title("Atención")
+                    mensaje = tk.Label(continuar,
+                                    text=f"El tiempo de viaje estimado es {tiempo_calculado:.2f} segundos. ¿Desea hacer la orden de igual manera?")
+                    mensaje.pack()
+                    boton_si = ttk.Button(continuar, text="Sí",
+                                        command=lambda: [self.ordenes.append(orden), self.show_ordenes(),
+                                                        continuar.destroy(), self.show_center_stats()])
+                    boton_si.pack(side="left", padx=5)
+                    boton_no = ttk.Button(continuar, text="No",
+                                        command=lambda: [messagebox.showinfo('', 'La orden no se ha realizado'),
+                                                        self.show_ordenes(), continuar.destroy()])
+                    boton_no.pack(side="left", padx=5)
+                    continuar.focus_set()
+                    continuar.grab_set()
+                    self.root.wait_window(continuar)
+
+
+            if any(cliente.nombre == orden[1] for cliente in self.calle.clientes):
+                if tiempo_calculado <= float(self.tiempo_entry.get()):
+                    self.ordenes.append(orden)
+                    self.show_client_stats()
+                    self.show_ordenes()
+                else:
+                    continuar = tk.Toplevel(self.root)
+                    continuar.title("Atención")
+                    mensaje = tk.Label(continuar,
+                                    text=f"El tiempo de viaje estimado es {tiempo_calculado:.2f} segundos. ¿Desea hacer la orden de igual manera?")
+                    mensaje.pack()
+                    boton_si = ttk.Button(continuar, text="Sí",
+                                        command=lambda: [self.ordenes.append(orden), self.show_ordenes(),
+                                                        continuar.destroy(), self.show_client_stats()])
+                    boton_si.pack(side="left", padx=5)
+                    boton_no = ttk.Button(continuar, text="No",
+                                        command=lambda: [messagebox.showinfo('', 'La orden no se ha realizado'),
+                                                        self.show_ordenes(), continuar.destroy()])
+                    boton_no.pack(side="left", padx=5)
+                    continuar.focus_set()
+                    continuar.grab_set()
+                    self.root.wait_window(continuar)
 
             self.order_window.destroy()
 
     def validar_capacidad(self, cantidad, orden):
-        for centro in self.calle.centros:
+        for centro in self.calle.centros: #si es entre cliente y centro
             if centro.nombre == orden[1]:
                 if centro.capacidad_dinero < cantidad or centro.capacidad_escoltas < self.carro.get_carro().escoltas or centro.capacidad_vehiculos < 1:
-                    messagebox.showinfo('Capacidad del centro copada', 'Por favor, seleccione otro centro.')
+                    messagebox.showinfo('Atención', 'Capacidad del centro copada. Por favor, seleccione otro centro.')
                     return False
-                else:
-                    centro.capacidad_dinero -= cantidad
-                    centro.capacidad_escoltas -= self.carro.get_carro().escoltas
-                    centro.capacidad_vehiculos -= 1
-                    return True
+                centro.capacidad_dinero -= cantidad
+                centro.capacidad_escoltas -= self.carro.get_carro().escoltas
+                centro.capacidad_vehiculos -= 1
+                return True
+                
+        for cliente in self.calle.clientes: #si es entre clientes
+            if cliente.nombre == orden[1]:
+                if cliente.capacidad_dinero < cantidad:
+                    messagebox.showinfo('Atención', 'Capacidad del cliente copada. Por favor, seleccione otro cliente.')
+                    return False
+                for cliente2 in self.calle.clientes:
+                    if cliente2.nombre == orden[0]:
+                        cliente2.capacidad_dinero += cantidad
+                cliente.capacidad_dinero -= cantidad
+                return True
 
     def simular_viaje(self, nodo1, nodo2):
         distancia = nx.shortest_path_length(self.calle.calle, source=nodo1, target=nodo2)
@@ -286,6 +323,22 @@ class Main:
             self.centro_stats.insert(tk.END, stats)
 
         self.centro_stats.config(state='disabled')
+
+    def show_client_stats(self):
+        if hasattr(self, 'ventana_estadisticas') and self.ventana_estadisticas:
+            self.ventana_estadisticas.destroy()
+        self.ventana_estadisticas = tk.Toplevel(self.root)
+        self.ventana_estadisticas.title("Estadísticas de Cliente")
+
+        for cliente in self.calle.clientes:
+            lbl_nombre = tk.Label(self.ventana_estadisticas, text=f"Nombre: {cliente.nombre}")
+            lbl_nombre.pack()
+            lbl_contenedores = tk.Label(self.ventana_estadisticas, text=f"Contenedores: {' '.join(contenedor.tipo for contenedor in cliente.contenedores)}")
+            lbl_contenedores.pack()
+            lbl_capacidad = tk.Label(self.ventana_estadisticas, text=f"Capacidad de dinero: {cliente.capacidad_dinero}")
+            lbl_capacidad.pack()
+
+        self.ventana_estadisticas.mainloop()
 
     def show_ordenes(self):
         self.ordenes_stats.config(state='normal')
